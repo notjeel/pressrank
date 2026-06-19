@@ -48,15 +48,25 @@ export async function fetchYouTubeChannel(input: {
   };
 }
 
-/** Most recent video ids from a channel's uploads playlist. */
-export async function fetchRecentVideoIds(
+export interface YTVideo {
+  videoId: string;
+  title: string;
+  description: string;
+}
+
+/**
+ * Most recent videos from a channel's uploads playlist, with title +
+ * description. The snippet text is always available via the Data API and is
+ * the reliable corpus for statement harvesting (captions are best-effort).
+ */
+export async function fetchRecentVideos(
   uploadsPlaylistId: string,
-  max = 5
-): Promise<string[]> {
+  max = 6
+): Promise<YTVideo[]> {
   const k = key();
   if (!k) return [];
   const params = new URLSearchParams({
-    part: "contentDetails",
+    part: "snippet,contentDetails",
     playlistId: uploadsPlaylistId,
     maxResults: String(max),
     key: k,
@@ -65,8 +75,12 @@ export async function fetchRecentVideoIds(
   if (!res.ok) return [];
   const data = await res.json();
   return (data?.items ?? [])
-    .map((i: any) => i?.contentDetails?.videoId)
-    .filter(Boolean);
+    .map((i: any) => ({
+      videoId: i?.contentDetails?.videoId,
+      title: i?.snippet?.title ?? "",
+      description: i?.snippet?.description ?? "",
+    }))
+    .filter((v: YTVideo) => v.videoId);
 }
 
 /**

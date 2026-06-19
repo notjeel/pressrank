@@ -3,7 +3,7 @@ import { getAIProvider } from "@/lib/ai";
 import type { Channel } from "@/lib/supabase/types";
 import { contentHash } from "./hash";
 import {
-  fetchRecentVideoIds,
+  fetchRecentVideos,
   fetchVideoTranscript,
   fetchYouTubeChannel,
 } from "./youtube";
@@ -141,15 +141,21 @@ async function harvestStatements(
 
   const yt = await fetchYouTubeChannel({ channelId: ch.youtube_channel_id });
   if (!yt?.uploadsPlaylistId) return;
-  const videoIds = await fetchRecentVideoIds(yt.uploadsPlaylistId, 5);
+  const videos = await fetchRecentVideos(yt.uploadsPlaylistId, 6);
 
   let added = 0;
-  for (const videoId of videoIds) {
-    const transcript = await fetchVideoTranscript(videoId);
-    if (transcript.length < 200) continue;
+  for (const v of videos) {
+    // Corpus = title + description (always available via Data API), plus the
+    // caption transcript when obtainable (best-effort). All provenance-pinned.
+    const transcript = await fetchVideoTranscript(v.videoId);
+    const sourceText = [v.title, v.description, transcript]
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+    if (sourceText.length < 80) continue;
 
     const excerpts = await ai.extractStatements({
-      sourceText: transcript,
+      sourceText,
       channelName: ch.name,
       maxStatements: 2,
     });
@@ -158,7 +164,7 @@ async function harvestStatements(
       const text = ex.text?.trim();
       if (!text || text.length < 20) continue;
       // Provenance check: the excerpt must actually appear in the source.
-      const inSource = transcript
+      const inSource = sourceText
         .toLowerCase()
         .includes(text.slice(0, 40).toLowerCase());
       if (!inSource) continue;
@@ -167,8 +173,8 @@ async function harvestStatements(
         channel_id: ch.id,
         text,
         context: ex.context ?? null,
-        source_url: `https://www.youtube.com/watch?v=${videoId}`,
-        source_ref: videoId,
+        source_url: `https://www.youtube.com/watch?v=${v.videoId}`,
+        source_ref: v.videoId,
         content_hash: contentHash(text),
       });
       // Unique (channel_id, content_hash) — ignore dupes.
@@ -199,28 +205,38 @@ async function composeSlates(
     .eq("active", true);
   if (!stmts || stmts.length < 4) return 0;
 
+  // Several slates per dimension per run, each a fresh randomized draw — so a
+  // channel's statements appear across enough slates to accrue a rating
+  // (≤1 statement per channel per slate keeps picks discriminating between
+  // channels). More slates also means more voting variety.
+  const TOPK_PER_DIM = 4;
+  const PAIR_PER_DIM = 2;
+
   let created = 0;
-  // Build a handful of topk slates and a few pairwise per recompute cycle.
   for (const dim of dims) {
-    const topk = buildSlate(stmts, 7);
-    if (topk.length >= 4) {
-      await supabase.from("slates").insert({
-        kind: "topk",
-        dimension_id: dim.id,
-        statement_ids: topk,
-        max_pick: 3,
-      });
-      created += 1;
+    for (let i = 0; i < TOPK_PER_DIM; i++) {
+      const topk = buildSlate(stmts, 7);
+      if (topk.length >= 4) {
+        await supabase.from("slates").insert({
+          kind: "topk",
+          dimension_id: dim.id,
+          statement_ids: topk,
+          max_pick: 3,
+        });
+        created += 1;
+      }
     }
-    const pair = buildSlate(stmts, 2);
-    if (pair.length === 2) {
-      await supabase.from("slates").insert({
-        kind: "pairwise",
-        dimension_id: dim.id,
-        statement_ids: pair,
-        max_pick: 1,
-      });
-      created += 1;
+    for (let i = 0; i < PAIR_PER_DIM; i++) {
+      const pair = buildSlate(stmts, 2);
+      if (pair.length === 2) {
+        await supabase.from("slates").insert({
+          kind: "pairwise",
+          dimension_id: dim.id,
+          statement_ids: pair,
+          max_pick: 1,
+        });
+        created += 1;
+      }
     }
   }
   result.slatesCreated = created;

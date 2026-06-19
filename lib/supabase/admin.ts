@@ -13,5 +13,12 @@ export function createSupabaseAdminClient() {
   }
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      // Bypass Next.js's fetch cache — without this, App Router caches
+      // supabase REST GETs and serves stale rows (e.g. an empty leaderboard
+      // captured before ratings were computed).
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { ...init, cache: "no-store" }),
+    },
   });
 }

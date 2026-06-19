@@ -11,7 +11,7 @@ export class GeminiProvider extends BaseProvider {
     const key = process.env.GEMINI_API_KEY;
     if (!key) throw new Error("GEMINI_API_KEY is not set");
     this.apiKey = key;
-    this.model = process.env.GEMINI_MODEL || "gemini-flash-latest";
+    this.model = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
   }
 
   async json<T = unknown>(
