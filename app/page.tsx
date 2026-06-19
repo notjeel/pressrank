@@ -122,25 +122,25 @@ export default async function HomePage() {
   if (statementsCount === 0) statementsCount = 186;
 
   const mockFactual: TopRating[] = [
-    { rank: 1, name: "Reuters", logo: "https://www.reuters.com/pf/resources/images/reuters/logo-vertical-default-value.svg", medium: "web", rating: 91, n_statements: 24 },
+    { rank: 1, name: "Reuters", logo: "", medium: "web", rating: 91, n_statements: 24 },
     { rank: 2, name: "BBC News", logo: "", medium: "youtube", rating: 85, n_statements: 18 },
     { rank: 3, name: "Associated Press", logo: "", medium: "youtube", rating: 83, n_statements: 15 }
   ];
 
   const mockNeutrality: TopRating[] = [
-    { rank: 1, name: "Reuters", logo: "https://www.reuters.com/pf/resources/images/reuters/logo-vertical-default-value.svg", medium: "web", rating: 88, n_statements: 24 },
+    { rank: 1, name: "Reuters", logo: "", medium: "web", rating: 88, n_statements: 24 },
     { rank: 2, name: "Associated Press", logo: "", medium: "youtube", rating: 84, n_statements: 15 },
     { rank: 3, name: "NDTV", logo: "", medium: "youtube", rating: 79, n_statements: 12 }
   ];
 
   const mockSourcing: TopRating[] = [
-    { rank: 1, name: "Reuters", logo: "https://www.reuters.com/pf/resources/images/reuters/logo-vertical-default-value.svg", medium: "web", rating: 93, n_statements: 24 },
+    { rank: 1, name: "Reuters", logo: "", medium: "web", rating: 93, n_statements: 24 },
     { rank: 2, name: "The Lallantop", logo: "", medium: "youtube", rating: 81, n_statements: 19 },
     { rank: 3, name: "Vox", logo: "", medium: "youtube", rating: 78, n_statements: 14 }
   ];
 
   const mockCalm: TopRating[] = [
-    { rank: 1, name: "Reuters", logo: "https://www.reuters.com/pf/resources/images/reuters/logo-vertical-default-value.svg", medium: "web", rating: 90, n_statements: 24 },
+    { rank: 1, name: "Reuters", logo: "", medium: "web", rating: 90, n_statements: 24 },
     { rank: 2, name: "Johnny Harris", logo: "", medium: "youtube", rating: 82, n_statements: 16 },
     { rank: 3, name: "The Print", logo: "", medium: "youtube", rating: 76, n_statements: 11 }
   ];
@@ -150,7 +150,7 @@ export default async function HomePage() {
   const sourcingList = topSourcing.length ? topSourcing : mockSourcing;
   const calmList = topCalm.length ? topCalm : mockCalm;
 
-  // Custom inline styles for landing page
+  // Custom inline styles for landing page (fully wired to CSS vars)
   const sectionStyle: React.CSSProperties = {
     padding: "80px clamp(15px,5vw,40px)",
     maxWidth: 1180,
@@ -158,8 +158,8 @@ export default async function HomePage() {
   };
 
   const statCardStyle: React.CSSProperties = {
-    background: "#16181d",
-    border: "1px solid #262a31",
+    background: "var(--surface)",
+    border: "1px solid var(--line)",
     borderRadius: 14,
     padding: "20px 24px",
     textAlign: "center",
@@ -168,8 +168,8 @@ export default async function HomePage() {
   };
 
   const cardStyle: React.CSSProperties = {
-    background: "#16181d",
-    border: "1px solid #262a31",
+    background: "var(--surface)",
+    border: "1px solid var(--line)",
     borderRadius: 16,
     padding: 24,
   };
@@ -180,9 +180,9 @@ export default async function HomePage() {
     gap: 6,
     padding: "6px 12px",
     borderRadius: 30,
-    background: "rgba(146, 150, 238, 0.1)",
-    border: "1px solid rgba(146, 150, 238, 0.2)",
-    color: "#9296ee",
+    background: "var(--accent-soft)",
+    border: "1px solid var(--line)",
+    color: "var(--accent)",
     fontSize: 12,
     fontWeight: 600,
     textTransform: "uppercase",
@@ -191,13 +191,13 @@ export default async function HomePage() {
   };
 
   return (
-    <div style={{ background: "#0e1014", color: "#ecedf0", overflowX: "hidden" }}>
+    <div style={{ background: "var(--bg)", color: "var(--fg)", overflowX: "hidden", transition: "background 0.15s, color 0.15s" }}>
       {/* 1. HERO SECTION */}
       <section style={{ ...sectionStyle, padding: "90px clamp(15px,5vw,40px) 70px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 48, alignItems: "center" }}>
           <div>
             <div style={badgeStyle}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#9296ee" }} />
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
               PressRank Benchmark
             </div>
             <h1
@@ -208,13 +208,13 @@ export default async function HomePage() {
                 fontWeight: 500,
                 letterSpacing: "-.02em",
                 margin: "0 0 18px",
-                color: "#fff",
+                color: "var(--fg)",
               }}
             >
               The Independent Benchmark for{" "}
               <span
                 style={{
-                  background: "linear-gradient(90deg, #9296ee, #3fb6ab)",
+                  background: "linear-gradient(90deg, var(--accent), var(--accent2))",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -226,7 +226,7 @@ export default async function HomePage() {
               style={{
                 fontSize: 16.5,
                 lineHeight: 1.6,
-                color: "#9aa0a8",
+                color: "var(--muted)",
                 marginBottom: 36,
                 maxWidth: "52ch",
               }}
@@ -240,8 +240,8 @@ export default async function HomePage() {
                 style={{
                   padding: "13px 26px",
                   borderRadius: 10,
-                  background: "#fff",
-                  color: "#0e1014",
+                  background: "var(--accent)",
+                  color: "#fff",
                   fontWeight: 600,
                   fontSize: 15,
                   textDecoration: "none",
@@ -257,8 +257,8 @@ export default async function HomePage() {
                   padding: "13px 26px",
                   borderRadius: 10,
                   background: "transparent",
-                  color: "#fff",
-                  border: "1px solid #262a31",
+                  color: "var(--fg)",
+                  border: "1px solid var(--line)",
                   fontWeight: 600,
                   fontSize: 15,
                   textDecoration: "none",
@@ -273,34 +273,34 @@ export default async function HomePage() {
             {/* Stats Row */}
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <div style={statCardStyle}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", fontFamily: "monospace" }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "var(--fg)", fontFamily: "monospace" }}>
                   {votesCount.toLocaleString()}
                 </div>
-                <div style={{ fontSize: 11, color: "#666c75", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
                   Votes Cast
                 </div>
               </div>
               <div style={statCardStyle}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", fontFamily: "monospace" }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "var(--fg)", fontFamily: "monospace" }}>
                   {channelsCount}
                 </div>
-                <div style={{ fontSize: 11, color: "#666c75", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
                   Channels
                 </div>
               </div>
               <div style={statCardStyle}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", fontFamily: "monospace" }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "var(--fg)", fontFamily: "monospace" }}>
                   {usersCount.toLocaleString()}
                 </div>
-                <div style={{ fontSize: 11, color: "#666c75", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
                   Voter Raters
                 </div>
               </div>
               <div style={statCardStyle}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: "#fff", fontFamily: "monospace" }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "var(--fg)", fontFamily: "monospace" }}>
                   {statementsCount}
                 </div>
-                <div style={{ fontSize: 11, color: "#666c75", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
                   Excerpts
                 </div>
               </div>
@@ -313,39 +313,39 @@ export default async function HomePage() {
               style={{
                 width: "100%",
                 maxWidth: 420,
-                background: "linear-gradient(135deg, #1c2027 0%, #16181d 100%)",
+                background: "linear-gradient(135deg, var(--grid) 0%, var(--surface) 100%)",
                 borderRadius: 20,
-                border: "1px solid #262a31",
+                border: "1px solid var(--line)",
                 padding: 24,
-                boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+                boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <span style={{ fontSize: 11, color: "#666c75", textTransform: "uppercase", letterSpacing: ".08em", fontWeight: 600 }}>
+                <span style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".08em", fontWeight: 600 }}>
                   Live Slate Sandbox
                 </span>
-                <span style={{ fontSize: 12, color: "#9296ee", fontWeight: 500 }}>
+                <span style={{ fontSize: 12, color: "var(--accent)", fontWeight: 500 }}>
                   Neutrality test
                 </span>
               </div>
 
               <div
                 style={{
-                  background: "#0e1014",
-                  border: "1px solid #262a31",
+                  background: "var(--bg)",
+                  border: "1px solid var(--line)",
                   borderRadius: 14,
                   padding: 18,
                   marginBottom: 16,
                 }}
               >
-                <div style={{ fontSize: 15, lineHeight: 1.5, color: "#ecedf0", fontStyle: "italic", marginBottom: 12 }}>
+                <div style={{ fontSize: 15, lineHeight: 1.5, color: "var(--fg)", fontStyle: "italic", marginBottom: 12 }}>
                   &quot;The source cited several anonymous officials claiming the budget was delayed, without providing any details or timeline verification.&quot;
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 10.5, color: "#666c75", textTransform: "uppercase", letterSpacing: ".06em" }}>
+                  <span style={{ fontSize: 10.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em" }}>
                     Source Hidden
                   </span>
-                  <span style={{ fontSize: 11, color: "#2ecc71", fontWeight: 600 }}>
+                  <span style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 600 }}>
                     Checked &apos;neutral&apos; &mdash; 86%
                   </span>
                 </div>
@@ -353,18 +353,18 @@ export default async function HomePage() {
 
               <div
                 style={{
-                  background: "#0e1014",
-                  border: "1px solid #262a31",
+                  background: "var(--bg)",
+                  border: "1px solid var(--line)",
                   borderRadius: 14,
                   padding: 18,
                   marginBottom: 20,
                 }}
               >
-                <div style={{ fontSize: 15, lineHeight: 1.5, color: "#ecedf0", fontStyle: "italic", marginBottom: 12 }}>
+                <div style={{ fontSize: 15, lineHeight: 1.5, color: "var(--fg)", fontStyle: "italic", marginBottom: 12 }}>
                   &quot;The policy change will result in immediate economic collapse across all state-owned sectors.&quot;
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 10.5, color: "#666c75", textTransform: "uppercase", letterSpacing: ".06em" }}>
+                  <span style={{ fontSize: 10.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em" }}>
                     Source Hidden
                   </span>
                   <span style={{ fontSize: 11, color: "#ea4335", fontWeight: 600 }}>
@@ -375,15 +375,15 @@ export default async function HomePage() {
 
               <div
                 style={{
-                  borderTop: "1px solid #262a31",
+                  borderTop: "1px solid var(--line)",
                   paddingTop: 16,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
-                <span style={{ fontSize: 12, color: "#9aa0a8" }}>Submit to reveal brand.</span>
-                <span style={{ fontSize: 12.5, color: "#fff", fontWeight: 600 }}>Try the Arena above &rarr;</span>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>Submit to reveal brand.</span>
+                <span style={{ fontSize: 12.5, color: "var(--fg)", fontWeight: 600 }}>Try the Arena above &rarr;</span>
               </div>
             </div>
           </div>
@@ -391,20 +391,20 @@ export default async function HomePage() {
       </section>
 
       {/* 2. TOP PERFORMERS RIGHT NOW */}
-      <section style={{ ...sectionStyle, borderTop: "1px solid #1c2027", paddingTop: 80 }}>
+      <section style={{ ...sectionStyle, borderTop: "1px solid var(--line)", paddingTop: 80 }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h2
             style={{
               fontFamily: "Newsreader, Georgia, serif",
               fontSize: "clamp(28px, 4vw, 36px)",
               fontWeight: 500,
-              color: "#fff",
+              color: "var(--fg)",
               margin: "0 0 10px",
             }}
           >
             Top Performers Right Now
           </h2>
-          <p style={{ fontSize: 14.5, color: "#9aa0a8", maxWidth: "60ch", margin: "0 auto" }}>
+          <p style={{ fontSize: 14.5, color: "var(--muted)", maxWidth: "60ch", margin: "0 auto" }}>
             Ranked by community ELO across our core dimensions, updated continuously.
           </p>
         </div>
@@ -413,20 +413,20 @@ export default async function HomePage() {
           {/* Box 1: Factual precision */}
           <div style={cardStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(63, 182, 171, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#3fb6ab" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "#fff" }}>Factual Precision</div>
-                <div style={{ fontSize: 11.5, color: "#666c75" }}>Verifiable facts over rumors</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Factual Precision</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Verifiable facts over rumors</div>
               </div>
             </div>
             {factualList.map((ch, idx) => (
-              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid #262a31" : "none" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "#bdc3c7" : "#e67e22", width: 14 }}>{ch.rank}</span>
-                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "#ecedf0" }}>{ch.name}</span>
-                <span style={{ fontSize: 11.5, color: "#666c75" }}>{ch.medium}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#fff", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
+                <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
               </div>
             ))}
           </div>
@@ -434,20 +434,20 @@ export default async function HomePage() {
           {/* Box 2: Neutrality */}
           <div style={cardStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(146, 150, 238, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#9296ee" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "#fff" }}>Neutrality</div>
-                <div style={{ fontSize: 11.5, color: "#666c75" }}>Objective, non-loaded tone</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Neutrality</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Objective, non-loaded tone</div>
               </div>
             </div>
             {neutralityList.map((ch, idx) => (
-              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid #262a31" : "none" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "#bdc3c7" : "#e67e22", width: 14 }}>{ch.rank}</span>
-                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "#ecedf0" }}>{ch.name}</span>
-                <span style={{ fontSize: 11.5, color: "#666c75" }}>{ch.medium}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#fff", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
+                <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
               </div>
             ))}
           </div>
@@ -455,20 +455,20 @@ export default async function HomePage() {
           {/* Box 3: Sourcing */}
           <div style={cardStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(63, 182, 171, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#3fb6ab" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5v-15a2.5 2.5 0 0 1 2.5-2.5H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "#fff" }}>Sourcing</div>
-                <div style={{ fontSize: 11.5, color: "#666c75" }}>Specific, verifiable sources</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Sourcing</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Specific, verifiable sources</div>
               </div>
             </div>
             {sourcingList.map((ch, idx) => (
-              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid #262a31" : "none" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "#bdc3c7" : "#e67e22", width: 14 }}>{ch.rank}</span>
-                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "#ecedf0" }}>{ch.name}</span>
-                <span style={{ fontSize: 11.5, color: "#666c75" }}>{ch.medium}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#fff", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
+                <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
               </div>
             ))}
           </div>
@@ -476,20 +476,20 @@ export default async function HomePage() {
           {/* Box 4: Calm / Non-sensational */}
           <div style={cardStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(146, 150, 238, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#9296ee" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "#fff" }}>Calm Delivery</div>
-                <div style={{ fontSize: 11.5, color: "#666c75" }}>Least sensational phrasing</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Calm Delivery</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Least sensational phrasing</div>
               </div>
             </div>
             {calmList.map((ch, idx) => (
-              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid #262a31" : "none" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "#bdc3c7" : "#e67e22", width: 14 }}>{ch.rank}</span>
-                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "#ecedf0" }}>{ch.name}</span>
-                <span style={{ fontSize: 11.5, color: "#666c75" }}>{ch.medium}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#fff", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
+                <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
               </div>
             ))}
           </div>
@@ -501,8 +501,8 @@ export default async function HomePage() {
             style={{
               padding: "11px 22px",
               borderRadius: 8,
-              background: "#fff",
-              color: "#0e1014",
+              background: "var(--accent)",
+              color: "#fff",
               fontWeight: 600,
               fontSize: 14,
               textDecoration: "none",
@@ -516,8 +516,8 @@ export default async function HomePage() {
               padding: "11px 22px",
               borderRadius: 8,
               background: "transparent",
-              color: "#fff",
-              border: "1px solid #262a31",
+              color: "var(--fg)",
+              border: "1px solid var(--line)",
               fontWeight: 600,
               fontSize: 14,
               textDecoration: "none",
@@ -529,20 +529,20 @@ export default async function HomePage() {
       </section>
 
       {/* 3. VOTE BLINDLY, HELP BUILD THE BENCHMARK */}
-      <section style={{ ...sectionStyle, borderTop: "1px solid #1c2027", paddingTop: 80 }}>
+      <section style={{ ...sectionStyle, borderTop: "1px solid var(--line)", paddingTop: 80 }}>
         <div style={{ textAlign: "center", marginBottom: 54 }}>
           <h2
             style={{
               fontFamily: "Newsreader, Georgia, serif",
               fontSize: "clamp(28px, 4vw, 36px)",
               fontWeight: 500,
-              color: "#fff",
+              color: "var(--fg)",
               margin: "0 0 10px",
             }}
           >
             Vote Blindly, Help Build the Benchmark
           </h2>
-          <p style={{ fontSize: 14.5, color: "#9aa0a8", maxWidth: "60ch", margin: "0 auto" }}>
+          <p style={{ fontSize: 14.5, color: "var(--muted)", maxWidth: "60ch", margin: "0 auto" }}>
             The statements you read are the only thing you see. Identity, branding, and graphics are completely stripped.
           </p>
         </div>
@@ -550,21 +550,21 @@ export default async function HomePage() {
         {/* Step 1 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 48, alignItems: "center", marginBottom: 70 }}>
           <div>
-            <div style={{ fontSize: 32, fontWeight: 700, color: "#9296ee", fontFamily: "monospace", marginBottom: 12 }}>01</div>
-            <h3 style={{ fontSize: 20, fontWeight: 600, color: "#fff", marginBottom: 12 }}>We collect transcripts</h3>
-            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#9aa0a8" }}>
+            <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)", fontFamily: "monospace", marginBottom: 12 }}>01</div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, color: "var(--fg)", marginBottom: 12 }}>We collect transcripts</h3>
+            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--muted)" }}>
               Every day we harvest recent coverage programmatically via official platform APIs. We pull verbatim transcripts and captions. No manual user submissions, ensuring representative, unbiased sampling.
             </p>
           </div>
           <div
             style={{
-              background: "#16181d",
-              border: "1px solid #262a31",
+              background: "var(--surface)",
+              border: "1px solid var(--line)",
               borderRadius: 16,
               padding: 20,
               fontFamily: "monospace",
               fontSize: 12.5,
-              color: "#3fb6ab",
+              color: "var(--accent2)",
               overflowX: "auto",
             }}
           >
@@ -579,20 +579,20 @@ export default async function HomePage() {
         {/* Step 2 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 48, alignItems: "center", marginBottom: 70 }}>
           <div style={{ order: 2 }}>
-            <div style={{ fontSize: 32, fontWeight: 700, color: "#9296ee", fontFamily: "monospace", marginBottom: 12 }}>02</div>
-            <h3 style={{ fontSize: 20, fontWeight: 600, color: "#fff", marginBottom: 12 }}>You vote blindly</h3>
-            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#9aa0a8" }}>
+            <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)", fontFamily: "monospace", marginBottom: 12 }}>02</div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, color: "var(--fg)", marginBottom: 12 }}>You vote blindly</h3>
+            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--muted)" }}>
               You review a randomized slate of anonymous statements. Pick the statements that best satisfy the quality dimension (e.g., Neutrality). Brand identities and logos reveal only after your vote is cast.
             </p>
           </div>
           <div style={{ order: 1, display: "flex", gap: 12, flexDirection: "column" }}>
-            <div style={{ ...cardStyle, border: "1px solid #3fb6ab", background: "rgba(63, 182, 171, 0.05)" }}>
-              <div style={{ fontSize: 13, color: "#3fb6ab", fontWeight: 600, marginBottom: 8 }}>Statement A (Factual)</div>
-              <div style={{ fontSize: 14, color: "#ecedf0", fontStyle: "italic" }}>&quot;The agency confirmed 3,000 cases of vaccine distribution delays across five provinces.&quot;</div>
+            <div style={{ ...cardStyle, border: "1.5px solid var(--accent)", background: "var(--accent-soft)" }}>
+              <div style={{ fontSize: 13, color: "var(--accent)", fontWeight: 600, marginBottom: 8 }}>Statement A (Factual)</div>
+              <div style={{ fontSize: 14, color: "var(--fg)", fontStyle: "italic" }}>&quot;The agency confirmed 3,000 cases of vaccine distribution delays across five provinces.&quot;</div>
             </div>
             <div style={cardStyle}>
-              <div style={{ fontSize: 13, color: "#666c75", fontWeight: 600, marginBottom: 8 }}>Statement B (Speculative)</div>
-              <div style={{ fontSize: 14, color: "#ecedf0", fontStyle: "italic" }}>&quot;Unsubstantiated reports point to complete structural failures in the distribution grid.&quot;</div>
+              <div style={{ fontSize: 13, color: "var(--muted)", fontWeight: 600, marginBottom: 8 }}>Statement B (Speculative)</div>
+              <div style={{ fontSize: 14, color: "var(--fg)", fontStyle: "italic" }}>&quot;Unsubstantiated reports point to complete structural failures in the distribution grid.&quot;</div>
             </div>
           </div>
         </div>
@@ -600,35 +600,35 @@ export default async function HomePage() {
         {/* Step 3 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 48, alignItems: "center" }}>
           <div>
-            <div style={{ fontSize: 32, fontWeight: 700, color: "#9296ee", fontFamily: "monospace", marginBottom: 12 }}>03</div>
-            <h3 style={{ fontSize: 20, fontWeight: 600, color: "#fff", marginBottom: 12 }}>Every vote refines the leaderboard</h3>
-            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#9aa0a8" }}>
+            <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)", fontFamily: "monospace", marginBottom: 12 }}>03</div>
+            <h3 style={{ fontSize: 20, fontWeight: 600, color: "var(--fg)", marginBottom: 12 }}>Every vote refines the leaderboard</h3>
+            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--muted)" }}>
               Your vote updates the latent ELO score of the underlying outlet. The leaderboard recalculates in real-time using Bayesian shrinkage, ensuring that small sample sizes don&apos;t skew the ratings.
             </p>
           </div>
           <div>
             <div
               style={{
-                background: "#16181d",
-                border: "1px solid #262a31",
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
                 borderRadius: 16,
                 padding: 20,
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #262a31", paddingBottom: 10, fontSize: 12, color: "#666c75", fontWeight: 600 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--line)", paddingBottom: 10, fontSize: 12, color: "var(--muted)", fontWeight: 600 }}>
                 <span>OUTLET</span>
                 <span>ELO RATING</span>
                 <span>CONFIDENCE BAND</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontSize: 13.5, color: "#fff", fontWeight: 600 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontSize: 13.5, color: "var(--fg)", fontWeight: 600 }}>
                 <span>Reuters</span>
                 <span>91 Rating</span>
-                <span style={{ color: "#3fb6ab" }}>&plusmn;2.1</span>
+                <span style={{ color: "var(--accent2)" }}>&plusmn;2.1</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontSize: 13.5, color: "#fff", fontWeight: 600 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontSize: 13.5, color: "var(--fg)", fontWeight: 600 }}>
                 <span>BBC News</span>
                 <span>85 Rating</span>
-                <span style={{ color: "#3fb6ab" }}>&plusmn;3.4</span>
+                <span style={{ color: "var(--accent2)" }}>&plusmn;3.4</span>
               </div>
             </div>
           </div>
@@ -636,44 +636,30 @@ export default async function HomePage() {
       </section>
 
       {/* 4. COMPARE NAMED */}
-      <section style={{ ...sectionStyle, borderTop: "1px solid #1c2027", paddingTop: 80 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 48, alignItems: "center" }}>
-          <div>
-            <h2
-              style={{
-                fontFamily: "Newsreader, Georgia, serif",
-                fontSize: "clamp(28px, 4vw, 36px)",
-                fontWeight: 500,
-                color: "#fff",
-                margin: "0 0 14px",
-              }}
-            >
-              Know the Contenders? Compare Them Named
-            </h2>
-            <p
-              style={{
-                fontSize: 15.5,
-                lineHeight: 1.6,
-                color: "#9aa0a8",
-                marginBottom: 24,
-              }}
-            >
-              Skip the blind arena when you want to compare specific outlets. Pick any two channels, overlay their radar charts, and review dimension-by-dimension deltas.
-            </p>
-
-            <ul style={{ paddingLeft: 20, color: "#ecedf0", fontSize: 14.5, lineHeight: 1.8, marginBottom: 30 }}>
-              <li>Compare TV broadcasters head-to-head with digital creators.</li>
-              <li>Inspect statement-level details of each outlet side-by-side.</li>
-              <li>Confidence whiskers indicate rating data density.</li>
-            </ul>
-
+      <section style={{ ...sectionStyle, borderTop: "1px solid var(--line)", paddingTop: 80 }}>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h2
+            style={{
+              fontFamily: "Newsreader, Georgia, serif",
+              fontSize: "clamp(28px, 4vw, 36px)",
+              fontWeight: 500,
+              color: "var(--fg)",
+              margin: "0 0 10px",
+            }}
+          >
+            Know the Contenders? Compare Them Named
+          </h2>
+          <p style={{ fontSize: 14.5, color: "var(--muted)", maxWidth: "60ch", margin: "0 auto 24px" }}>
+            Skip the blind arena when you want to compare specific outlets. Pick any two channels, overlay their radar charts, and review dimension-by-dimension deltas.
+          </p>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
             <Link
               href="/compare"
               style={{
-                padding: "12px 24px",
+                padding: "11px 22px",
                 borderRadius: 8,
-                background: "#fff",
-                color: "#0e1014",
+                background: "var(--accent)",
+                color: "#fff",
                 fontWeight: 600,
                 fontSize: 14.5,
                 textDecoration: "none",
@@ -683,55 +669,65 @@ export default async function HomePage() {
               Open Compare page &rarr;
             </Link>
           </div>
+        </div>
 
-          <div style={{ position: "relative" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 48, alignItems: "center" }}>
+          <div>
+            <ul style={{ paddingLeft: 20, color: "var(--fg)", fontSize: 14.5, lineHeight: 1.8, marginBottom: 30, maxWidth: "45ch", margin: "0 auto" }}>
+              <li>Compare TV broadcasters head-to-head with digital creators.</li>
+              <li>Inspect statement-level details of each outlet side-by-side.</li>
+              <li>Confidence whiskers indicate rating data density.</li>
+            </ul>
+          </div>
+
+          <div style={{ position: "relative", maxWidth: 420, margin: "0 auto", width: "100%" }}>
             <div
               style={{
-                border: "1px solid #262a31",
-                background: "#16181d",
+                border: "1px solid var(--line)",
+                background: "var(--surface)",
                 borderRadius: 20,
                 padding: 24,
-                boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Aaj Tak</span>
-                <span style={{ fontSize: 12, color: "#666c75" }}>vs</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Dhruv Rathee</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>Aaj Tak</span>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>vs</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>Dhruv Rathee</span>
               </div>
 
               {/* Mock comparison radar chart */}
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ color: "#9aa0a8" }}>Factual Precision</span>
-                    <span style={{ fontWeight: 600, color: "#fff" }}>42 vs 74</span>
+                    <span style={{ color: "var(--muted)" }}>Factual Precision</span>
+                    <span style={{ fontWeight: 600, color: "var(--fg)" }}>42 vs 74</span>
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, background: "#0e1014", position: "relative" }}>
+                  <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>
                     <div style={{ position: "absolute", left: "42%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335" }} />
-                    <div style={{ position: "absolute", left: "74%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#3fb6ab" }} />
+                    <div style={{ position: "absolute", left: "74%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)" }} />
                   </div>
                 </div>
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ color: "#9aa0a8" }}>Neutrality</span>
-                    <span style={{ fontWeight: 600, color: "#fff" }}>36 vs 58</span>
+                    <span style={{ color: "var(--muted)" }}>Neutrality</span>
+                    <span style={{ fontWeight: 600, color: "var(--fg)" }}>36 vs 58</span>
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, background: "#0e1014", position: "relative" }}>
+                  <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>
                     <div style={{ position: "absolute", left: "36%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335" }} />
-                    <div style={{ position: "absolute", left: "58%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#3fb6ab" }} />
+                    <div style={{ position: "absolute", left: "58%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)" }} />
                   </div>
                 </div>
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ color: "#9aa0a8" }}>Sourcing</span>
-                    <span style={{ fontWeight: 600, color: "#fff" }}>51 vs 81</span>
+                    <span style={{ color: "var(--muted)" }}>Sourcing</span>
+                    <span style={{ fontWeight: 600, color: "var(--fg)" }}>51 vs 81</span>
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, background: "#0e1014", position: "relative" }}>
+                  <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>
                     <div style={{ position: "absolute", left: "51%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335" }} />
-                    <div style={{ position: "absolute", left: "81%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#3fb6ab" }} />
+                    <div style={{ position: "absolute", left: "81%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)" }} />
                   </div>
                 </div>
               </div>
@@ -744,12 +740,12 @@ export default async function HomePage() {
       <section style={{ ...sectionStyle, paddingBottom: 100 }}>
         <div
           style={{
-            background: "linear-gradient(135deg, #1c2027 0%, #16181d 100%)",
-            border: "1px solid #262a31",
+            background: "linear-gradient(135deg, var(--grid) 0%, var(--surface) 100%)",
+            border: "1px solid var(--line)",
             borderRadius: 24,
             padding: "50px 30px",
             textAlign: "center",
-            boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
           }}
         >
           <h2
@@ -757,13 +753,13 @@ export default async function HomePage() {
               fontFamily: "Newsreader, Georgia, serif",
               fontSize: "clamp(26px, 4.5vw, 34px)",
               fontWeight: 500,
-              color: "#fff",
+              color: "var(--fg)",
               margin: "0 0 12px",
             }}
           >
             Sign in to Vote, Save History, and Review
           </h2>
-          <p style={{ fontSize: 14.5, color: "#9aa0a8", maxWidth: "50ch", margin: "0 auto 30px" }}>
+          <p style={{ fontSize: 14.5, color: "var(--muted)", maxWidth: "50ch", margin: "0 auto 30px" }}>
             We use secure magic links and Google OAuth. No passwords needed.
           </p>
 
@@ -775,8 +771,8 @@ export default async function HomePage() {
               gap: 10,
               padding: "13px 26px",
               borderRadius: 10,
-              background: "#fff",
-              color: "#0e1014",
+              background: "var(--accent)",
+              color: "#fff",
               fontWeight: 600,
               fontSize: 15,
               textDecoration: "none",

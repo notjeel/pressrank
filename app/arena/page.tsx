@@ -129,8 +129,8 @@ export default function ArenaPage() {
   });
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(20px,5vw,52px) clamp(15px,4vw,28px) 90px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 22 }}>
+    <main style={{ maxWidth: 960, margin: "0 auto", padding: "clamp(20px,5vw,52px) clamp(15px,4vw,28px) 90px", textAlign: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, flexWrap: "wrap", marginBottom: 22, flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".13em", textTransform: "uppercase", color: "var(--accent)" }}>
             The Arena
@@ -149,10 +149,10 @@ export default function ArenaPage() {
         </p>
       )}
 
-      <h1 style={{ fontFamily: "Newsreader,'Hind',Georgia,serif", fontWeight: 500, fontSize: "clamp(27px,5.2vw,40px)", lineHeight: 1.12, letterSpacing: "-.01em", margin: "0 0 14px" }}>
+      <h1 style={{ fontFamily: "Newsreader,'Hind',Georgia,serif", fontWeight: 500, fontSize: "clamp(27px,5.2vw,40px)", lineHeight: 1.12, letterSpacing: "-.01em", margin: "0 auto 14px", maxWidth: "36ch" }}>
         {loading ? "Loading a fresh slate…" : done ? "Vote recorded." : slate?.question ?? "Nothing to vote on right now"}
       </h1>
-      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 26px", maxWidth: "54ch" }}>
+      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 auto 26px", maxWidth: "68ch" }}>
         {done
           ? "Your blind judgement is in. The sources stay anonymous — by design, no one (not even you) sees which channel said what. That's what keeps the ranking honest."
           : kind === "pairwise"
@@ -165,7 +165,7 @@ export default function ArenaPage() {
       )}
 
       {exhausted && (
-        <div style={{ padding: 20, border: "1px solid var(--line)", borderRadius: 14, background: "var(--surface)", marginBottom: 20 }}>
+        <div style={{ padding: 20, border: "1px solid var(--line)", borderRadius: 14, background: "var(--surface)", marginBottom: 20, textAlign: "left" }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>You&apos;re all caught up 🎉</div>
           <div style={{ fontSize: 14, color: "var(--muted)" }}>
             {error || "You've judged every available slate."} Fresh statements are
@@ -207,7 +207,7 @@ export default function ArenaPage() {
         </div>
       )}
 
-      <div style={{ marginTop: 26, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+      <div style={{ marginTop: 26, display: "flex", gap: 12, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
         {slate && !done && !exhausted && (
           <>
             <button
@@ -250,7 +250,7 @@ export default function ArenaPage() {
         )}
       </div>
 
-      <p style={{ marginTop: 34, fontSize: 12, lineHeight: 1.6, color: "var(--faint)", maxWidth: "60ch" }}>
+      <p style={{ marginTop: 34, fontSize: 12, lineHeight: 1.6, color: "var(--faint)", maxWidth: "60ch", margin: "34px auto 0" }}>
         Reading the Arena needs no account. Voting does, so each ballot is one person.
         Every channel is judged on the same blind yardstick, and sources are never revealed.
       </p>
