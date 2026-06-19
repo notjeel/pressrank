@@ -41,6 +41,11 @@ const seeds: Array<{
   { name: "Zee News", handle: "@ZeeNews", medium: "youtube", entity_type: "org", official_url: "https://zeenews.india.com", language: "hi", country: "IN" },
   { name: "Times Now", handle: "@TimesNow", medium: "youtube", entity_type: "org", official_url: "https://www.timesnownews.com", language: "en", country: "IN" },
   { name: "Ravish Kumar Official", handle: "@RavishKumarOfficial", medium: "youtube", entity_type: "individual", language: "hi", country: "IN" },
+  { name: "Peek TV", handle: "@peektv", medium: "youtube", entity_type: "org", language: "hi", country: "IN" },
+  { name: "Soch by Mohak Mangal", handle: "@SochbyMohak", medium: "youtube", entity_type: "individual", language: "hi", country: "IN" },
+  { name: "Think School", handle: "@ThinkSchool", medium: "youtube", entity_type: "org", language: "en", country: "IN" },
+  { name: "The Deshbhakt", handle: "@thedeshbhakt", medium: "youtube", entity_type: "individual", language: "hi", country: "IN" },
+  { name: "Unfiltered by Samdish", handle: "@UnfilteredbySamdish", medium: "youtube", entity_type: "individual", language: "hi", country: "IN" },
 ];
 
 async function main() {
