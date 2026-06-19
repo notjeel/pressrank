@@ -25,41 +25,89 @@ export default function ArenaPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [kind, setKind] = useState<"topk" | "pairwise">("topk");
-  const [slate, setSlate] = useState<Slate | null>(null);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [exhausted, setExhausted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [topkSlate, setTopkSlate] = useState<Slate | null>(null);
+  const [pairwiseSlate, setPairwiseSlate] = useState<Slate | null>(null);
+  const [topkSelected, setTopkSelected] = useState<string[]>([]);
+  const [pairwiseSelected, setPairwiseSelected] = useState<string[]>([]);
+  const [topkDone, setTopkDone] = useState(false);
+  const [pairwiseDone, setPairwiseDone] = useState(false);
+  const [topkError, setTopkError] = useState<string | null>(null);
+  const [pairwiseError, setPairwiseError] = useState<string | null>(null);
+  const [topkExhausted, setTopkExhausted] = useState(false);
+  const [pairwiseExhausted, setPairwiseExhausted] = useState(false);
+  const [topkLoading, setTopkLoading] = useState(false);
+  const [pairwiseLoading, setPairwiseLoading] = useState(false);
   const [votesLeft, setVotesLeft] = useState<number | null>(null);
 
-  const loadSlate = useCallback(async () => {
-    setError(null);
-    setExhausted(false);
-    setDone(false);
-    setSelected([]);
-    setLoading(true);
+  const slate = kind === "topk" ? topkSlate : pairwiseSlate;
+  const selected = kind === "topk" ? topkSelected : pairwiseSelected;
+  const done = kind === "topk" ? topkDone : pairwiseDone;
+  const error = kind === "topk" ? topkError : pairwiseError;
+  const exhausted = kind === "topk" ? topkExhausted : pairwiseExhausted;
+  const loading = kind === "topk" ? topkLoading : pairwiseLoading;
+
+  const setSelected = kind === "topk" ? setTopkSelected : setPairwiseSelected;
+  const setDone = kind === "topk" ? setTopkDone : setPairwiseDone;
+  const setError = kind === "topk" ? setTopkError : setPairwiseError;
+  const setExhausted = kind === "topk" ? setTopkExhausted : setPairwiseExhausted;
+
+  const loadSlateForKind = useCallback(async (k: "topk" | "pairwise") => {
+    if (k === "topk") {
+      setTopkError(null);
+      setTopkExhausted(false);
+      setTopkDone(false);
+      setTopkSelected([]);
+      setTopkLoading(true);
+    } else {
+      setPairwiseError(null);
+      setPairwiseExhausted(false);
+      setPairwiseDone(false);
+      setPairwiseSelected([]);
+      setPairwiseLoading(true);
+    }
     try {
-      const res = await fetch(`/api/arena/next?kind=${kind}`);
+      const res = await fetch(`/api/arena/next?kind=${k}`);
       const data = await res.json();
       if (!res.ok) {
-        setExhausted(!!data.exhausted);
+        if (k === "topk") {
+          setTopkExhausted(!!data.exhausted);
+        } else {
+          setPairwiseExhausted(!!data.exhausted);
+        }
         if (typeof data.votesLeftWeek === "number") setVotesLeft(data.votesLeftWeek);
         throw new Error(data.error || "No slate available yet.");
       }
-      setSlate(data);
+      if (k === "topk") {
+        setTopkSlate(data);
+      } else {
+        setPairwiseSlate(data);
+      }
       if (typeof data.votesLeftWeek === "number") setVotesLeft(data.votesLeftWeek);
     } catch (e) {
-      setError((e as Error).message);
-      setSlate(null);
+      if (k === "topk") {
+        setTopkError((e as Error).message);
+        setTopkSlate(null);
+      } else {
+        setPairwiseError((e as Error).message);
+        setPairwiseSlate(null);
+      }
     } finally {
-      setLoading(false);
+      if (k === "topk") {
+        setTopkLoading(false);
+      } else {
+        setPairwiseLoading(false);
+      }
     }
-  }, [kind]);
+  }, []);
+
+  const loadSlate = useCallback(() => {
+    loadSlateForKind(kind);
+  }, [loadSlateForKind, kind]);
 
   useEffect(() => {
-    loadSlate();
-  }, [loadSlate]);
+    loadSlateForKind("topk");
+    loadSlateForKind("pairwise");
+  }, [loadSlateForKind]);
 
   useEffect(() => {
     if (!TURNSTILE_KEY) return;
