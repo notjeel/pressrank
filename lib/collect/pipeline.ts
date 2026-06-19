@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getAIProvider } from "@/lib/ai";
+import { config } from "@/lib/config";
 import type { Channel } from "@/lib/supabase/types";
 import { contentHash } from "./hash";
 import {
@@ -13,13 +14,15 @@ export interface CollectResult {
   statsUpdated: number;
   statementsAdded: number;
   slatesCreated: number;
+  aiCalls: number;
+  budgetReached: boolean;
   errors: string[];
 }
 
 // Refresh windows — skip work that was done recently to respect API quotas.
 const ENRICH_TTL_H = 24 * 7;
 const STATS_TTL_H = 24;
-const STATEMENTS_TTL_H = 24 * 3;
+const STATEMENTS_TTL_H = 24; // re-harvest daily so the corpus keeps growing
 const STATEMENTS_PER_CHANNEL = 6;
 
 /**
@@ -38,24 +41,35 @@ export async function runCollection(
     statsUpdated: 0,
     statementsAdded: 0,
     slatesCreated: 0,
+    aiCalls: 0,
+    budgetReached: false,
     errors: [],
   };
 
+  // Stale-first: process the channels we've touched least recently, so a daily
+  // run rotates through the whole set over time and keeps the corpus fresh.
   const { data: channels, error } = await supabase
     .from("channels")
     .select("*")
-    .order("created_at", { ascending: true })
-    .limit(opts.limit ?? 25);
+    .order("statements_fetched_at", { ascending: true, nullsFirst: true })
+    .limit(opts.limit ?? 50);
   if (error) {
     result.errors.push(`load channels: ${error.message}`);
     return result;
   }
 
+  const aiBudget = config.maxAiCallsPerRun;
   for (const ch of (channels ?? []) as Channel[]) {
+    // Stop spending AI calls once the daily budget is gone; non-AI work and
+    // slate composition still run. Remaining channels are picked up tomorrow.
+    if (result.aiCalls >= aiBudget) {
+      result.budgetReached = true;
+      break;
+    }
     try {
-      await enrichChannel(supabase, ai, ch, result);
+      await enrichChannel(supabase, ai, ch, result, aiBudget);
       await fetchStats(supabase, ch, result);
-      await harvestStatements(supabase, ai, ch, result);
+      await harvestStatements(supabase, ai, ch, result, aiBudget);
     } catch (e) {
       result.errors.push(`${ch.name}: ${(e as Error).message}`);
     }
@@ -70,9 +84,12 @@ async function enrichChannel(
   supabase: SupabaseClient,
   ai: ReturnType<typeof getAIProvider>,
   ch: Channel,
-  result: CollectResult
+  result: CollectResult,
+  aiBudget: number
 ) {
   if (!isStale(ch.enriched_at, ENRICH_TTL_H)) return;
+  if (result.aiCalls >= aiBudget) return;
+  result.aiCalls += 1;
   const e = await ai.enrichChannel({
     name: ch.name,
     handle: ch.handle,
@@ -134,10 +151,12 @@ async function harvestStatements(
   supabase: SupabaseClient,
   ai: ReturnType<typeof getAIProvider>,
   ch: Channel,
-  result: CollectResult
+  result: CollectResult,
+  aiBudget: number
 ) {
   if (!isStale(ch.statements_fetched_at, STATEMENTS_TTL_H)) return;
   if (ch.medium !== "youtube" || !ch.youtube_channel_id) return;
+  if (result.aiCalls >= aiBudget) return;
 
   const yt = await fetchYouTubeChannel({ channelId: ch.youtube_channel_id });
   if (!yt?.uploadsPlaylistId) return;
@@ -145,6 +164,7 @@ async function harvestStatements(
 
   let added = 0;
   for (const v of videos) {
+    if (result.aiCalls >= aiBudget) break;
     // Corpus = title + description (always available via Data API), plus the
     // caption transcript when obtainable (best-effort). All provenance-pinned.
     const transcript = await fetchVideoTranscript(v.videoId);
@@ -154,6 +174,7 @@ async function harvestStatements(
       .trim();
     if (sourceText.length < 80) continue;
 
+    result.aiCalls += 1;
     const excerpts = await ai.extractStatements({
       sourceText,
       channelName: ch.name,
@@ -197,6 +218,15 @@ async function composeSlates(
 ): Promise<number> {
   const { data: dims } = await supabase.from("dimensions").select("id");
   if (!dims?.length) return 0;
+
+  // Bound the pool: a daily cron would otherwise grow slates forever. Stop
+  // composing once there are plenty in rotation; new statements still enter as
+  // older slates fall out of the arena's recent window.
+  const SLATE_POOL_CAP = 500;
+  const { count: existing } = await supabase
+    .from("slates")
+    .select("id", { count: "exact", head: true });
+  if ((existing ?? 0) >= SLATE_POOL_CAP) return 0;
 
   // Pull active statements with their channel so we can enforce ≤1 per channel.
   const { data: stmts } = await supabase

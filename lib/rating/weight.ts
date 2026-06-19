@@ -16,14 +16,18 @@ export function computeVoteWeight(input: WeightInputs): number {
   return clamp(identityTrust * behavioralAuthenticity * recency, 0, 1);
 }
 
-// New accounts count for little; trust ramps over ~30 days. This makes freshly
-// farmed accounts near-useless without aged, believable history.
+// Newer accounts count for somewhat less; trust ramps to full over ~14 days.
+// The floor is deliberately non-trivial (0.5) so genuine early-launch voters
+// still move the needle — while month-old farmed accounts gain little edge.
+// Tighten the floor later (toward 0.1) once you have volume and add CIB scoring.
 function identityTrustFromAge(createdAt: string | null): number {
-  if (!createdAt) return 0.1;
+  const FLOOR = 0.5;
+  const RAMP_DAYS = 14;
+  if (!createdAt) return FLOOR;
   const days = (Date.now() - new Date(createdAt).getTime()) / 86_400_000;
-  if (days <= 0) return 0.1;
-  if (days >= 30) return 1.0;
-  return 0.1 + (days / 30) * 0.9;
+  if (days <= 0) return FLOOR;
+  if (days >= RAMP_DAYS) return 1.0;
+  return FLOOR + (days / RAMP_DAYS) * (1 - FLOOR);
 }
 
 function clamp(x: number, lo: number, hi: number): number {

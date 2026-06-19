@@ -1,21 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { config } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/arena/next?kind=topk|pairwise&dimension=neutrality
-// Returns ONE slate with anonymized statements — no channel, no source. This
-// blindness is the core anti-gaming property: you can't boost/brigade what you
-// can't see.
+// Returns ONE slate with anonymized statements — no channel, no source, ever.
+// For a logged-in user, slates they have already voted on are excluded, so the
+// same person never sees the same slate twice.
 export async function GET(req: NextRequest) {
   const sp = new URL(req.url).searchParams;
   const kind = sp.get("kind") === "pairwise" ? "pairwise" : "topk";
   const dimensionKey = sp.get("dimension");
-  const supabase = createSupabaseAdminClient();
+  const admin = createSupabaseAdminClient();
+
+  // Who's asking? (optional — reading is open, but we use it to skip seen slates)
+  const userClient = createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await userClient.auth.getUser();
+
+  // Slates this user has already voted on.
+  let votedSlateIds = new Set<string>();
+  let votesLeftWeek: number | null = null;
+  if (user) {
+    const { data: voted } = await admin
+      .from("votes")
+      .select("slate_id")
+      .eq("user_id", user.id);
+    votedSlateIds = new Set((voted ?? []).map((v) => v.slate_id as string));
+
+    const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    const { count } = await admin
+      .from("votes")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", weekAgo);
+    votesLeftWeek = Math.max(0, config.voteLimitPerWeek - (count ?? 0));
+  }
 
   let dimId: number | null = null;
   if (dimensionKey) {
-    const { data: dim } = await supabase
+    const { data: dim } = await admin
       .from("dimensions")
       .select("id")
       .eq("key", dimensionKey)
@@ -23,38 +50,46 @@ export async function GET(req: NextRequest) {
     dimId = dim?.id ?? null;
   }
 
-  // Pull a pool of recent slates and choose one at random (unpredictable order
-  // kills position/pre-planning attacks).
-  let q = supabase
+  // Pull a generous pool of recent slates, drop ones already seen, pick one at
+  // random (unpredictable order kills position/pre-planning attacks).
+  let q = admin
     .from("slates")
     .select("id, kind, dimension_id, statement_ids, max_pick")
     .eq("kind", kind)
     .order("created_at", { ascending: false })
-    .limit(40);
+    .limit(200);
   if (dimId) q = q.eq("dimension_id", dimId);
 
   const { data: slates } = await q;
-  if (!slates?.length) {
+  const fresh = (slates ?? []).filter((s) => !votedSlateIds.has(s.id as string));
+
+  if (!fresh.length) {
+    const exhausted = (slates?.length ?? 0) > 0;
     return NextResponse.json(
-      { error: "no slates available — run /api/cron/collect first" },
+      {
+        error: exhausted
+          ? "You've voted on every available slate — check back as new data comes in daily."
+          : "No slates available yet — run /api/cron/collect first.",
+        exhausted,
+        votesLeftWeek,
+      },
       { status: 404 }
     );
   }
-  const slate = slates[Math.floor(Math.random() * slates.length)];
+  const slate = fresh[Math.floor(Math.random() * fresh.length)];
 
-  const { data: dim } = await supabase
+  const { data: dim } = await admin
     .from("dimensions")
     .select("id, key, label, question")
     .eq("id", slate.dimension_id)
     .maybeSingle();
 
   // Fetch ONLY text + context — never the channel link.
-  const { data: statements } = await supabase
+  const { data: statements } = await admin
     .from("statements")
     .select("id, text, context")
     .in("id", slate.statement_ids as string[]);
 
-  // Preserve slate order, shuffled, so position can't leak ranking.
   const byId = new Map((statements ?? []).map((s) => [s.id, s]));
   const ordered = (slate.statement_ids as string[])
     .map((id) => byId.get(id))
@@ -68,5 +103,6 @@ export async function GET(req: NextRequest) {
     question: dim?.question,
     dimension: dim ? { key: dim.key, label: dim.label } : null,
     statements: ordered,
+    votesLeftWeek,
   });
 }

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { config } from "@/lib/config";
 
 // Shared scoring backend for BOTH mechanics.
 // A vote is a slate + the subset the voter selected. This is a partial ranking
@@ -14,8 +15,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 // --- Tunables ---
 const PRIOR_STRENGTH = 5; // pseudo-observations pulling toward the global mean
 const GLOBAL_PRIOR = 0.4; // expected baseline selection rate (k/n ≈ 3/7)
-const MIN_STATEMENTS = 3; // a channel needs this many scored statements...
-const MIN_EXPOSURE = 20; // ...and this much total exposure to be "ranked"
+// A channel needs this many scored statements AND this much total exposure to
+// be publicly "ranked". Env-tunable (lower for a small launch).
+const MIN_STATEMENTS = config.rankMinStatements;
+const MIN_EXPOSURE = config.rankMinExposure;
 const CHANNEL_PRIOR_STRENGTH = 4;
 
 export interface RecomputeResult {
