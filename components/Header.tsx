@@ -109,7 +109,7 @@ export function Header() {
           width: "100%",
         }}
       >
-        <div style={{ flex: "1 0 0", display: "flex", alignItems: "center" }}>
+        <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
           <Link
             href="/"
             style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}
@@ -140,7 +140,7 @@ export function Header() {
           ))}
         </nav>
 
-        <div style={{ flex: "1 0 0", display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
+        <div style={{ flex: 1, display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
           <button
             onClick={toggle}
             title="Toggle theme"
