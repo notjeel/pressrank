@@ -296,14 +296,7 @@ export default async function HomePage() {
                   Voter Raters
                 </div>
               </div>
-              <div style={statCardStyle}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: "var(--fg)", fontFamily: "monospace" }}>
-                  {statementsCount}
-                </div>
-                <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 4 }}>
-                  Excerpts
-                </div>
-              </div>
+
             </div>
           </div>
 

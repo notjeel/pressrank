@@ -7,12 +7,17 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agree, setAgree] = useState(false);
 
   const redirectTo =
     typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
 
   async function sendMagicLink(e: React.FormEvent) {
     e.preventDefault();
+    if (!agree) {
+      setError("You must agree to the privacy policy to continue.");
+      return;
+    }
     setError(null);
     const supabase = createSupabaseBrowserClient();
     const { error } = await supabase.auth.signInWithOtp({
@@ -24,6 +29,10 @@ export default function LoginPage() {
   }
 
   async function signInWithGoogle() {
+    if (!agree) {
+      setError("You must agree to the privacy policy to continue.");
+      return;
+    }
     setError(null);
     const supabase = createSupabaseBrowserClient();
     const { error } = await supabase.auth.signInWithOAuth({
@@ -55,9 +64,35 @@ export default function LoginPage() {
         An account ties votes to a person (reputation-weighted) without storing your phone number. Reading the leaderboard needs no login.
       </p>
 
+      {/* Mandatory Privacy/Terms checkbox */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, margin: "0 0 24px", textAlign: "left" }}>
+        <input
+          type="checkbox"
+          id="agree-privacy"
+          checked={agree}
+          onChange={(e) => setAgree(e.target.checked)}
+          style={{ marginTop: 4, cursor: "pointer" }}
+        />
+        <label htmlFor="agree-privacy" style={{ fontSize: 13, color: "var(--muted)", cursor: "pointer", lineHeight: 1.45 }}>
+          I agree to the <a href="/privacy" style={{ color: "var(--accent)", textDecoration: "underline" }}>Privacy Policy</a> and <a href="/terms" style={{ color: "var(--accent)", textDecoration: "underline" }}>Terms of Service</a>. I understand my phone details are hashed.
+        </label>
+      </div>
+
       <button
         onClick={signInWithGoogle}
-        style={{ width: "100%", padding: "12px 14px", borderRadius: 11, border: "1px solid var(--line)", background: "var(--surface)", fontSize: 14, fontWeight: 600 }}
+        disabled={!agree}
+        style={{
+          width: "100%",
+          padding: "12px 14px",
+          borderRadius: 11,
+          border: "1px solid var(--line)",
+          background: "var(--surface)",
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: agree ? "pointer" : "not-allowed",
+          opacity: agree ? 1 : 0.6,
+          transition: "opacity 0.15s",
+        }}
       >
         Continue with Google
       </button>
@@ -78,7 +113,22 @@ export default function LoginPage() {
             placeholder="you@example.com"
             style={card}
           />
-          <button type="submit" style={{ width: "100%", padding: "12px 14px", borderRadius: 11, background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 600 }}>
+          <button
+            type="submit"
+            disabled={!agree}
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              borderRadius: 11,
+              background: "var(--accent)",
+              color: "#fff",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: agree ? "pointer" : "not-allowed",
+              opacity: agree ? 1 : 0.6,
+              transition: "opacity 0.15s",
+            }}
+          >
             Send magic link
           </button>
         </form>
