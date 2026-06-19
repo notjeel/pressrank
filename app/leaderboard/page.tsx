@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { DIMS } from "@/lib/ui/dims";
 import { Scatter, type ScatterPoint } from "@/components/charts/Scatter";
 import { MiniBar } from "@/components/charts/Bars";
@@ -26,12 +26,19 @@ interface ChannelLite {
   language: string | null;
 }
 
-export default function LeaderboardPage() {
+function LeaderboardInner() {
   const router = useRouter();
-  const [dim, setDim] = useState("factual");
+  const searchParams = useSearchParams();
+  const dim = searchParams.get("dimension") || "factual";
   const [medium, setMedium] = useState("all");
   const [type, setType] = useState("all");
   const [lang, setLang] = useState("all");
+
+  const setDim = (newDim: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("dimension", newDim);
+    router.replace(`/leaderboard?${params.toString()}`);
+  };
 
   const [rows, setRows] = useState<LbRow[]>([]);
   const [bc, setBc] = useState<ScatterPoint[]>([]);
@@ -120,14 +127,14 @@ export default function LeaderboardPage() {
   );
 
   return (
-    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(20px,4vw,44px) clamp(15px,4vw,40px) 90px", textAlign: "center" }}>
+    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(20px,4vw,44px) clamp(15px,4vw,40px) 90px" }}>
       <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 600, letterSpacing: ".13em", textTransform: "uppercase", color: "var(--accent)" }}>
         Leaderboard
       </div>
-      <h1 style={{ fontFamily: "Newsreader,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,4vw,38px)", lineHeight: 1.1, margin: "0 auto 10px", letterSpacing: "-.01em", maxWidth: "30ch" }}>
+      <h1 style={{ fontFamily: "Newsreader,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,4vw,38px)", lineHeight: 1.1, margin: "0 0 10px", letterSpacing: "-.01em" }}>
         Who earns trust — and who just has reach
       </h1>
-      <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "var(--muted)", margin: "0 auto 30px", maxWidth: "62ch" }}>
+      <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 30px", maxWidth: "62ch" }}>
         Every point is a channel, scored from a blind-judged sample of its statements. Position is the community&apos;s read on quality — not a verdict.
       </p>
 
@@ -144,10 +151,10 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end", justifyContent: "center", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 16 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 6 }}>Rank by</div>
-          <div style={{ display: "flex", gap: 2, padding: 3, border: "1px solid var(--line)", borderRadius: 10, background: "var(--surface)", flexWrap: "wrap", justifyContent: "center" }}>
+          <div style={{ display: "flex", gap: 2, padding: 3, border: "1px solid var(--line)", borderRadius: 10, background: "var(--surface)", flexWrap: "wrap" }}>
             {DIMS.map((d) => (
               <button key={d.key} onClick={() => setDim(d.key)} style={pill(dim === d.key)}>
                 {d.short}
@@ -155,14 +162,14 @@ export default function LeaderboardPage() {
             ))}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginLeft: "auto" }}>
           <Filter label="Medium" value={medium} set={setMedium} opts={uniq("medium")} />
           <Filter label="Type" value={type} set={setType} opts={uniq("content_type")} />
           <Filter label="Language" value={lang} set={setLang} opts={uniq("language")} />
         </div>
       </div>
 
-      <div style={{ border: "1px solid var(--line)", borderRadius: 16, background: "var(--surface)", overflow: "hidden", textAlign: "left" }}>
+      <div style={{ border: "1px solid var(--line)", borderRadius: 16, background: "var(--surface)", overflow: "hidden" }}>
         <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: 10, padding: "12px 18px", borderBottom: "1px solid var(--line)", fontSize: 11, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--muted)" }}>
           <div>#</div>
           <div>Channel</div>
@@ -211,6 +218,14 @@ export default function LeaderboardPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function LeaderboardPage() {
+  return (
+    <Suspense fallback={<main style={{ padding: 44, textAlign: "center", color: "var(--muted)" }}>Loading…</main>}>
+      <LeaderboardInner />
+    </Suspense>
   );
 }
 

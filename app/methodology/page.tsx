@@ -119,9 +119,9 @@ export default function MethodologyPage() {
             </p>
           </div>
           <div style={dimItemStyle}>
-            <strong style={{ fontSize: 15, color: "var(--fg)" }}>Calm (Non-sensational)</strong>
+            <strong style={{ fontSize: 15, color: "var(--fg)" }}>Non-sensational</strong>
             <p style={{ fontSize: 13.5, color: "var(--muted)", margin: "4px 0 0" }}>
-              <em>“Which is the least sensational / clickbait-driven?”</em> Rates the calm, editorial delivery of stories over high-alert headline grabbing.
+              <em>“Which is the least sensational / clickbait-driven?”</em> Rates the objective, measured editorial delivery of stories over high-alert headline grabbing.
             </p>
           </div>
         </div>

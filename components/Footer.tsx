@@ -57,7 +57,7 @@ export function Footer() {
             <Link href="/leaderboard?dimension=neutrality" style={linkStyle}>Neutrality</Link>
             <Link href="/leaderboard?dimension=sourcing" style={linkStyle}>Sourcing</Link>
             <Link href="/leaderboard?dimension=fact_vs_opinion" style={linkStyle}>Fact vs. opinion</Link>
-            <Link href="/leaderboard?dimension=non_sensational" style={linkStyle}>Calm</Link>
+            <Link href="/leaderboard?dimension=non_sensational" style={linkStyle}>Non-sensational</Link>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

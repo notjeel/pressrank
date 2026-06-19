@@ -74,7 +74,7 @@ export default function SharePage() {
         This week&apos;s most-trusted channel
       </h1>
       <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 22px", maxWidth: "58ch" }}>
-        Auto-generated cards, sized for where people actually share. Same calm tone everywhere.
+        Auto-generated cards, sized for where people actually share. Same objective tone everywhere.
       </p>
 
       {empty ? (
