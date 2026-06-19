@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer
@@ -14,13 +16,26 @@ export function Footer() {
     >
       <span style={{ fontWeight: 600, color: "var(--muted)" }}>PressRank</span>
       <span>Same yardstick for every channel.</span>
-      <span style={{ marginLeft: "auto", textDecoration: "underline", cursor: "pointer" }}>
+      <Link
+        href="/methodology"
+        style={{
+          marginLeft: "auto",
+          textDecoration: "underline",
+          cursor: "pointer",
+        }}
+      >
         Methodology
-      </span>
-      <span style={{ textDecoration: "underline", cursor: "pointer" }}>
+      </Link>
+      <Link
+        href="/how-we-anonymize"
+        style={{
+          textDecoration: "underline",
+          cursor: "pointer",
+        }}
+      >
         How we anonymize
-      </span>
-      <span style={{ textDecoration: "underline", cursor: "pointer" }}>API</span>
+      </Link>
     </footer>
   );
 }
+
