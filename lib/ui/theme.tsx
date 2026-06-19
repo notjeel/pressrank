@@ -37,15 +37,15 @@ const LIGHT: Palette = {
 };
 
 const DARK: Palette = {
-  bg: "#0e1014",
-  surface: "#16181d",
+  bg: "#000000",
+  surface: "#0d0e11",
   fg: "#ecedf0",
   muted: "#9aa0a8",
   faint: "#666c75",
-  line: "#262a31",
-  grid: "#1c2027",
+  line: "#1c1e22",
+  grid: "#0b0c0e",
   accent: "#9296ee",
-  accentSoft: "#1d2036",
+  accentSoft: "#0e0f1a",
   accent2: "#3fb6ab",
 };
 
