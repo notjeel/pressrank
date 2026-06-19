@@ -1,0 +1,250 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getAIProvider } from "@/lib/ai";
+import type { Channel } from "@/lib/supabase/types";
+import { contentHash } from "./hash";
+import {
+  fetchRecentVideoIds,
+  fetchVideoTranscript,
+  fetchYouTubeChannel,
+} from "./youtube";
+
+export interface CollectResult {
+  enriched: number;
+  statsUpdated: number;
+  statementsAdded: number;
+  slatesCreated: number;
+  errors: string[];
+}
+
+// Refresh windows — skip work that was done recently to respect API quotas.
+const ENRICH_TTL_H = 24 * 7;
+const STATS_TTL_H = 24;
+const STATEMENTS_TTL_H = 24 * 3;
+const STATEMENTS_PER_CHANNEL = 6;
+
+/**
+ * The fully-automated collection job. Discovers/enriches metadata, fetches
+ * reach stats, harvests provenance-pinned statements, tags them, and composes
+ * fresh voting slates. The ONLY thing it does not do is rate channels — that
+ * stays community-driven.
+ */
+export async function runCollection(
+  supabase: SupabaseClient,
+  opts: { limit?: number } = {}
+): Promise<CollectResult> {
+  const ai = getAIProvider();
+  const result: CollectResult = {
+    enriched: 0,
+    statsUpdated: 0,
+    statementsAdded: 0,
+    slatesCreated: 0,
+    errors: [],
+  };
+
+  const { data: channels, error } = await supabase
+    .from("channels")
+    .select("*")
+    .order("created_at", { ascending: true })
+    .limit(opts.limit ?? 25);
+  if (error) {
+    result.errors.push(`load channels: ${error.message}`);
+    return result;
+  }
+
+  for (const ch of (channels ?? []) as Channel[]) {
+    try {
+      await enrichChannel(supabase, ai, ch, result);
+      await fetchStats(supabase, ch, result);
+      await harvestStatements(supabase, ai, ch, result);
+    } catch (e) {
+      result.errors.push(`${ch.name}: ${(e as Error).message}`);
+    }
+  }
+
+  result.slatesCreated = await composeSlates(supabase, result);
+  return result;
+}
+
+// ---------- Step 1: discover / enrich metadata via AI ----------
+async function enrichChannel(
+  supabase: SupabaseClient,
+  ai: ReturnType<typeof getAIProvider>,
+  ch: Channel,
+  result: CollectResult
+) {
+  if (!isStale(ch.enriched_at, ENRICH_TTL_H)) return;
+  const e = await ai.enrichChannel({
+    name: ch.name,
+    handle: ch.handle,
+    medium: ch.medium,
+    official_url: ch.official_url,
+  });
+  const patch: Record<string, unknown> = { enriched_at: new Date().toISOString() };
+  if (e.medium) patch.medium = e.medium;
+  if (e.entity_type) patch.entity_type = e.entity_type;
+  if (e.content_type) patch.content_type = e.content_type;
+  if (e.language && !ch.language) patch.language = e.language;
+  if (e.country && !ch.country) patch.country = e.country;
+  if (e.official_url && !ch.official_url) patch.official_url = e.official_url;
+  if (e.logo_url && !ch.logo_url) patch.logo_url = e.logo_url;
+
+  const { error } = await supabase.from("channels").update(patch).eq("id", ch.id);
+  if (error) result.errors.push(`enrich ${ch.name}: ${error.message}`);
+  else {
+    // Mutate local copy so later steps see fresh values.
+    Object.assign(ch, patch);
+    result.enriched += 1;
+  }
+}
+
+// ---------- Step 2: fetch reach stats ----------
+async function fetchStats(
+  supabase: SupabaseClient,
+  ch: Channel,
+  result: CollectResult
+) {
+  if (!isStale(ch.stats_fetched_at, STATS_TTL_H)) return;
+  if (ch.medium !== "youtube") return; // other platforms: AI approx is set during enrich
+
+  const yt = await fetchYouTubeChannel({
+    channelId: ch.youtube_channel_id,
+    handle: ch.handle,
+  });
+  if (!yt) return;
+
+  const patch: Record<string, unknown> = {
+    stats_fetched_at: new Date().toISOString(),
+  };
+  if (!ch.youtube_channel_id) patch.youtube_channel_id = yt.channelId;
+  if (yt.thumbnail && !ch.logo_url) patch.logo_url = yt.thumbnail;
+  await supabase.from("channels").update(patch).eq("id", ch.id);
+  Object.assign(ch, patch);
+
+  const { error } = await supabase.from("channel_stats").insert({
+    channel_id: ch.id,
+    subs: yt.subs,
+    views: yt.views,
+  });
+  if (error) result.errors.push(`stats ${ch.name}: ${error.message}`);
+  else result.statsUpdated += 1;
+}
+
+// ---------- Step 3: harvest provenance-pinned statements ----------
+async function harvestStatements(
+  supabase: SupabaseClient,
+  ai: ReturnType<typeof getAIProvider>,
+  ch: Channel,
+  result: CollectResult
+) {
+  if (!isStale(ch.statements_fetched_at, STATEMENTS_TTL_H)) return;
+  if (ch.medium !== "youtube" || !ch.youtube_channel_id) return;
+
+  const yt = await fetchYouTubeChannel({ channelId: ch.youtube_channel_id });
+  if (!yt?.uploadsPlaylistId) return;
+  const videoIds = await fetchRecentVideoIds(yt.uploadsPlaylistId, 5);
+
+  let added = 0;
+  for (const videoId of videoIds) {
+    const transcript = await fetchVideoTranscript(videoId);
+    if (transcript.length < 200) continue;
+
+    const excerpts = await ai.extractStatements({
+      sourceText: transcript,
+      channelName: ch.name,
+      maxStatements: 2,
+    });
+
+    for (const ex of excerpts) {
+      const text = ex.text?.trim();
+      if (!text || text.length < 20) continue;
+      // Provenance check: the excerpt must actually appear in the source.
+      const inSource = transcript
+        .toLowerCase()
+        .includes(text.slice(0, 40).toLowerCase());
+      if (!inSource) continue;
+
+      const { error } = await supabase.from("statements").insert({
+        channel_id: ch.id,
+        text,
+        context: ex.context ?? null,
+        source_url: `https://www.youtube.com/watch?v=${videoId}`,
+        source_ref: videoId,
+        content_hash: contentHash(text),
+      });
+      // Unique (channel_id, content_hash) — ignore dupes.
+      if (!error) added += 1;
+    }
+    if (added >= STATEMENTS_PER_CHANNEL) break;
+  }
+
+  await supabase
+    .from("channels")
+    .update({ statements_fetched_at: new Date().toISOString() })
+    .eq("id", ch.id);
+  result.statementsAdded += added;
+}
+
+// ---------- Step 5: compose balanced, randomized slates ----------
+async function composeSlates(
+  supabase: SupabaseClient,
+  result: CollectResult
+): Promise<number> {
+  const { data: dims } = await supabase.from("dimensions").select("id");
+  if (!dims?.length) return 0;
+
+  // Pull active statements with their channel so we can enforce ≤1 per channel.
+  const { data: stmts } = await supabase
+    .from("statements")
+    .select("id, channel_id")
+    .eq("active", true);
+  if (!stmts || stmts.length < 4) return 0;
+
+  let created = 0;
+  // Build a handful of topk slates and a few pairwise per recompute cycle.
+  for (const dim of dims) {
+    const topk = buildSlate(stmts, 7);
+    if (topk.length >= 4) {
+      await supabase.from("slates").insert({
+        kind: "topk",
+        dimension_id: dim.id,
+        statement_ids: topk,
+        max_pick: 3,
+      });
+      created += 1;
+    }
+    const pair = buildSlate(stmts, 2);
+    if (pair.length === 2) {
+      await supabase.from("slates").insert({
+        kind: "pairwise",
+        dimension_id: dim.id,
+        statement_ids: pair,
+        max_pick: 1,
+      });
+      created += 1;
+    }
+  }
+  result.slatesCreated = created;
+  return created;
+}
+
+// Pick up to n statements, at most one per channel, randomized.
+function buildSlate(
+  stmts: { id: string; channel_id: string }[],
+  n: number
+): string[] {
+  const shuffled = [...stmts].sort(() => Math.random() - 0.5);
+  const picked: string[] = [];
+  const usedChannels = new Set<string>();
+  for (const s of shuffled) {
+    if (usedChannels.has(s.channel_id)) continue;
+    usedChannels.add(s.channel_id);
+    picked.push(s.id);
+    if (picked.length >= n) break;
+  }
+  return picked;
+}
+
+function isStale(ts: string | null, ttlHours: number): boolean {
+  if (!ts) return true;
+  return Date.now() - new Date(ts).getTime() > ttlHours * 3600_000;
+}

@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env*.local
+*.log
+.vercel
+.DS_Store
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# design export artifact
+Pressrank.zip
