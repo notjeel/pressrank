@@ -6,7 +6,10 @@
  *
  * Run: npm run seed   (loads .env.local, uses the service-role key)
  */
-import "dotenv/config";
+import { config } from "dotenv";
+// Next.js uses .env.local for secrets; load it (falling back to .env).
+config({ path: ".env.local" });
+config();
 import { createClient } from "@supabase/supabase-js";
 
 const seeds: Array<{
