@@ -149,10 +149,28 @@ export default function ArenaPage() {
         </p>
       )}
 
-      <h1 style={{ fontFamily: "Newsreader,'Hind',Georgia,serif", fontWeight: 500, fontSize: "clamp(27px,5.2vw,40px)", lineHeight: 1.12, letterSpacing: "-.01em", margin: "0 auto 14px", maxWidth: "36ch" }}>
-        {loading ? "Loading a fresh slate…" : done ? "Vote recorded." : slate?.question ?? "Nothing to vote on right now"}
+      <h1 style={{
+        fontFamily: "Newsreader,'Hind',Georgia,serif",
+        fontWeight: 500,
+        fontSize: "clamp(27px,5.2vw,40px)",
+        lineHeight: 1.12,
+        letterSpacing: "-.01em",
+        margin: "0 auto 14px",
+        maxWidth: "36ch",
+        opacity: loading ? 0.4 : 1,
+        transition: "opacity 0.2s ease-in-out",
+      }}>
+        {!slate && loading ? "Loading a fresh slate…" : done ? "Vote recorded." : slate?.question ?? "Nothing to vote on right now"}
       </h1>
-      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 auto 26px", maxWidth: "68ch" }}>
+      <p style={{
+        fontSize: 15,
+        lineHeight: 1.55,
+        color: "var(--muted)",
+        margin: "0 auto 26px",
+        maxWidth: "68ch",
+        opacity: loading ? 0.4 : 1,
+        transition: "opacity 0.2s ease-in-out",
+      }}>
         {done
           ? "Your blind judgement is in. The sources stay anonymous — by design, no one (not even you) sees which channel said what. That's what keeps the ranking honest."
           : kind === "pairwise"
@@ -175,7 +193,14 @@ export default function ArenaPage() {
       )}
 
       {slate && !done && (
-        <div style={{ display: "grid", gridTemplateColumns: kind === "pairwise" ? "repeat(auto-fit,minmax(240px,1fr))" : "repeat(auto-fit,minmax(220px,1fr))", gap: 13 }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: kind === "pairwise" ? "repeat(auto-fit,minmax(240px,1fr))" : "repeat(auto-fit,minmax(220px,1fr))",
+          gap: 13,
+          opacity: loading ? 0.3 : 1,
+          transform: loading ? "scale(0.985)" : "scale(1)",
+          transition: "opacity 0.22s ease-in-out, transform 0.22s ease-in-out",
+        }}>
           {slate.statements.map((s) => {
             const idx = selected.indexOf(s.id);
             const picked = idx >= 0;
