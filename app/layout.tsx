@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "PressRank — Blind community ratings for news channels",
   description:
     "Judge anonymized coverage, not brands. Community-driven, hard-to-game ratings for news-spreading channels across YouTube, Instagram, TV and the web.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
