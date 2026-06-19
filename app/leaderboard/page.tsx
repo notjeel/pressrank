@@ -37,7 +37,7 @@ function LeaderboardInner() {
   const setDim = (newDim: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("dimension", newDim);
-    router.replace(`/leaderboard?${params.toString()}`);
+    router.replace(`/leaderboard?${params.toString()}`, { scroll: false });
   };
 
   const [rows, setRows] = useState<LbRow[]>([]);

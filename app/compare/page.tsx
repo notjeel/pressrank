@@ -62,13 +62,13 @@ function CompareInner() {
   const remove = (id: string) => {
     const next = ids.filter((x) => x !== id);
     setIds(next);
-    router.replace(`/compare?ids=${next.join(",")}`);
+    router.replace(`/compare?ids=${next.join(",")}`, { scroll: false });
   };
   const add = (id: string) => {
     if (!id || ids.includes(id) || ids.length >= 3) return;
     const next = [...ids, id];
     setIds(next);
-    router.replace(`/compare?ids=${next.join(",")}`);
+    router.replace(`/compare?ids=${next.join(",")}`, { scroll: false });
   };
 
   const selStyle: React.CSSProperties = {
