@@ -35,6 +35,12 @@ const seeds: Array<{
   { name: "The Lallantop", handle: "@TheLallantop", medium: "youtube", entity_type: "org", language: "hi", country: "IN" },
   { name: "Dhruv Rathee", handle: "@dhruvrathee", medium: "youtube", entity_type: "individual", language: "hi", country: "IN" },
   { name: "Aaj Tak", handle: "@aajtak", medium: "youtube", entity_type: "org", official_url: "https://www.aajtak.in", language: "hi", country: "IN" },
+  { name: "WION", handle: "@WION", medium: "youtube", entity_type: "org", official_url: "https://www.wionews.com", language: "en", country: "IN" },
+  { name: "India Today", handle: "@indiatoday", medium: "youtube", entity_type: "org", official_url: "https://www.indiatoday.in", language: "en", country: "IN" },
+  { name: "Republic World", handle: "@republicworld", medium: "youtube", entity_type: "org", official_url: "https://www.republicworld.com", language: "en", country: "IN" },
+  { name: "Zee News", handle: "@ZeeNews", medium: "youtube", entity_type: "org", official_url: "https://zeenews.india.com", language: "hi", country: "IN" },
+  { name: "Times Now", handle: "@TimesNow", medium: "youtube", entity_type: "org", official_url: "https://www.timesnownews.com", language: "en", country: "IN" },
+  { name: "Ravish Kumar Official", handle: "@RavishKumarOfficial", medium: "youtube", entity_type: "individual", language: "hi", country: "IN" },
 ];
 
 async function main() {
