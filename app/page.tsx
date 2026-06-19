@@ -411,96 +411,88 @@ export default async function HomePage() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20, marginBottom: 44 }}>
           {/* Box 1: Factual precision */}
-          <Link href="/leaderboard?dimension=factual" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-            <div style={cardStyle}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Factual Precision</div>
-                  <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Verifiable facts over rumors</div>
-                </div>
+          <div style={cardStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
               </div>
-              {factualList.map((ch, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
-                  <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
-                </div>
-              ))}
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Factual Precision</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Verifiable facts over rumors</div>
+              </div>
             </div>
-          </Link>
+            {factualList.map((ch, idx) => (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
+                <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+              </div>
+            ))}
+          </div>
 
           {/* Box 2: Neutrality */}
-          <Link href="/leaderboard?dimension=neutrality" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-            <div style={cardStyle}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Neutrality</div>
-                  <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Objective, non-loaded tone</div>
-                </div>
+          <div style={cardStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
               </div>
-              {neutralityList.map((ch, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
-                  <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
-                </div>
-              ))}
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Neutrality</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Objective, non-loaded tone</div>
+              </div>
             </div>
-          </Link>
+            {neutralityList.map((ch, idx) => (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
+                <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+              </div>
+            ))}
+          </div>
 
           {/* Box 3: Sourcing */}
-          <Link href="/leaderboard?dimension=sourcing" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-            <div style={cardStyle}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5v-15a2.5 2.5 0 0 1 2.5-2.5H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-                </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Sourcing</div>
-                  <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Specific, verifiable sources</div>
-                </div>
+          <div style={cardStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5v-15a2.5 2.5 0 0 1 2.5-2.5H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
               </div>
-              {sourcingList.map((ch, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
-                  <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
-                </div>
-              ))}
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Sourcing</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Specific, verifiable sources</div>
+              </div>
             </div>
-          </Link>
+            {sourcingList.map((ch, idx) => (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
+                <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+              </div>
+            ))}
+          </div>
 
           {/* Box 4: Non-sensational */}
-          <Link href="/leaderboard?dimension=non_sensational" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-            <div style={cardStyle}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-                </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Non-sensational</div>
-                  <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Least sensational phrasing</div>
-                </div>
+          <div style={cardStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
               </div>
-              {nonSensationalList.map((ch, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
-                  <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
-                  <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
-                </div>
-              ))}
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--fg)" }}>Non-sensational</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Least sensational phrasing</div>
+              </div>
             </div>
-          </Link>
+            {nonSensationalList.map((ch, idx) => (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
+                <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
@@ -645,40 +637,26 @@ export default async function HomePage() {
 
       {/* 4. COMPARE NAMED */}
       <section style={{ ...sectionStyle, borderTop: "1px solid var(--line)", paddingTop: 80 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 48, alignItems: "center" }}>
-          <div>
-            <h2
-              style={{
-                fontFamily: "Newsreader, Georgia, serif",
-                fontSize: "clamp(28px, 4vw, 36px)",
-                fontWeight: 500,
-                color: "var(--fg)",
-                margin: "0 0 14px",
-              }}
-            >
-              Know the Contenders? Compare Them Named
-            </h2>
-            <p
-              style={{
-                fontSize: 15.5,
-                lineHeight: 1.6,
-                color: "var(--muted)",
-                marginBottom: 24,
-              }}
-            >
-              Skip the blind arena when you want to compare specific outlets. Pick any two channels, overlay their radar charts, and review dimension-by-dimension deltas.
-            </p>
-
-            <ul style={{ paddingLeft: 20, color: "var(--fg)", fontSize: 14.5, lineHeight: 1.8, marginBottom: 30 }}>
-              <li>Compare TV broadcasters head-to-head with digital creators.</li>
-              <li>Inspect statement-level details of each outlet side-by-side.</li>
-              <li>Confidence whiskers indicate rating data density.</li>
-            </ul>
-
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h2
+            style={{
+              fontFamily: "Newsreader, Georgia, serif",
+              fontSize: "clamp(28px, 4vw, 36px)",
+              fontWeight: 500,
+              color: "var(--fg)",
+              margin: "0 0 10px",
+            }}
+          >
+            Know the Contenders? Compare Them Named
+          </h2>
+          <p style={{ fontSize: 14.5, color: "var(--muted)", maxWidth: "60ch", margin: "0 auto 24px" }}>
+            Skip the blind arena when you want to compare specific outlets. Pick any two channels, overlay their radar charts, and review dimension-by-dimension deltas.
+          </p>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
             <Link
               href="/compare"
               style={{
-                padding: "12px 24px",
+                padding: "11px 22px",
                 borderRadius: 8,
                 background: "var(--accent)",
                 color: "#fff",
@@ -691,8 +669,18 @@ export default async function HomePage() {
               Open Compare page &rarr;
             </Link>
           </div>
+        </div>
 
-          <div style={{ position: "relative" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 48, alignItems: "center" }}>
+          <div>
+            <ul style={{ paddingLeft: 20, color: "var(--fg)", fontSize: 14.5, lineHeight: 1.8, marginBottom: 30, maxWidth: "45ch", margin: "0 auto" }}>
+              <li>Compare TV broadcasters head-to-head with digital creators.</li>
+              <li>Inspect statement-level details of each outlet side-by-side.</li>
+              <li>Confidence whiskers indicate rating data density.</li>
+            </ul>
+          </div>
+
+          <div style={{ position: "relative", maxWidth: 420, margin: "0 auto", width: "100%" }}>
             <div
               style={{
                 border: "1px solid var(--line)",

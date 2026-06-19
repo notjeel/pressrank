@@ -82,16 +82,16 @@ function CompareInner() {
   };
 
   return (
-    <main style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(20px,4vw,44px) clamp(15px,4vw,40px) 90px" }}>
+    <main style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(20px,4vw,44px) clamp(15px,4vw,40px) 90px", textAlign: "center" }}>
       <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 600, letterSpacing: ".13em", textTransform: "uppercase", color: "var(--accent)" }}>Compare</div>
-      <h1 style={{ fontFamily: "Newsreader,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,4vw,36px)", lineHeight: 1.08, margin: "0 0 10px", letterSpacing: "-.01em" }}>
+      <h1 style={{ fontFamily: "Newsreader,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,4vw,36px)", lineHeight: 1.08, margin: "0 auto 10px", letterSpacing: "-.01em", maxWidth: "34ch" }}>
         A TV anchor and an independent creator, on the same yardstick
       </h1>
-      <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 24px", maxWidth: "60ch" }}>
+      <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "var(--muted)", margin: "0 auto 24px", maxWidth: "60ch" }}>
         Overlay any channels and read the gaps dimension by dimension.
       </p>
 
-      <div style={{ display: "flex", gap: 9, flexWrap: "wrap", alignItems: "center", marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 9, flexWrap: "wrap", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
         {loaded.map((l, i) => (
           <span key={l.id} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 8px 7px 13px", borderRadius: 999, border: "1px solid var(--line)", background: "var(--surface)", fontWeight: 600, fontSize: 13.5 }}>
             <span style={{ width: 9, height: 9, borderRadius: "50%", background: colors[i % 3] }} />
@@ -108,9 +108,9 @@ function CompareInner() {
       </div>
 
       {loaded.length === 0 ? (
-        <p style={{ fontSize: 14, color: "var(--muted)" }}>Add channels above to compare their trust profiles.</p>
+        <p style={{ fontSize: 14, color: "var(--muted)", margin: "0 auto" }}>Add channels above to compare their trust profiles.</p>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 26 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 26, textAlign: "left" }}>
           <div style={{ border: "1px solid var(--line)", borderRadius: 16, background: "var(--surface)", padding: 20, display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{ alignSelf: "flex-start", fontWeight: 600, fontSize: 15, marginBottom: 10 }}>Overlaid profiles</div>
             <Radar series={series} />
