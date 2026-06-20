@@ -225,17 +225,17 @@ async function composeSlates(
   const { data: dims } = await supabase.from("dimensions").select("id");
   if (!dims?.length) return 0;
 
-  // Prune slates older than 90 days to keep the database size bounded.
+  // Prune slates older than 365 days to keep the database size bounded.
   // This automatically retires old votes (on delete cascade), keeping ratings fresh.
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 86_400_000).toISOString();
-  await supabase.from("slates").delete().lt("created_at", ninetyDaysAgo);
+  const oneYearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
+  await supabase.from("slates").delete().lt("created_at", oneYearAgo);
 
-  // Retire statements older than 90 days from the active pool.
+  // Retire statements older than 365 days from the active pool.
   // This keeps the voting pool fresh and relevant while preserving historical vote data.
   await supabase
     .from("statements")
     .update({ active: false })
-    .lt("harvested_at", ninetyDaysAgo)
+    .lt("harvested_at", oneYearAgo)
     .eq("active", true);
 
   // Stop composing if we already have plenty of fresh slates in rotation.
