@@ -219,14 +219,19 @@ async function composeSlates(
   const { data: dims } = await supabase.from("dimensions").select("id");
   if (!dims?.length) return 0;
 
-  // Bound the pool: a daily cron would otherwise grow slates forever. Stop
-  // composing once there are plenty in rotation; new statements still enter as
-  // older slates fall out of the arena's recent window.
-  const SLATE_POOL_CAP = 500;
-  const { count: existing } = await supabase
+  // Prune slates older than 90 days to keep the database size bounded.
+  // This automatically retires old votes (on delete cascade), keeping ratings fresh.
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 86_400_000).toISOString();
+  await supabase.from("slates").delete().lt("created_at", ninetyDaysAgo);
+
+  // Stop composing if we already have plenty of fresh slates in rotation.
+  // This prevents cron spamming while ensuring new slates can always enter.
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
+  const { count: existingRecent } = await supabase
     .from("slates")
-    .select("id", { count: "exact", head: true });
-  if ((existing ?? 0) >= SLATE_POOL_CAP) return 0;
+    .select("id", { count: "exact", head: true })
+    .gte("created_at", sevenDaysAgo);
+  if ((existingRecent ?? 0) >= 150) return 0;
 
   // Pull active statements with their channel so we can enforce ≤1 per channel.
   const { data: stmts } = await supabase
