@@ -24,8 +24,8 @@ export default async function HomePage() {
   let topSourcing: TopRating[] = [];
   let topNonSensational: TopRating[] = [];
 
-  let compareA = { name: "Reuters", ratings: { 1: 43.0, 2: 41.7, 3: 45.5, 5: 42.9 } as Record<number, number> };
-  let compareB = { name: "Dhruv Rathee", ratings: { 1: 38.8, 2: 41.2, 3: 40.0, 5: 40.6 } as Record<number, number> };
+  let compareA = { name: "Aaj Tak", ratings: { 1: 36.0, 2: 42.0, 3: 51.0, 5: 45.0 } as Record<number, number> };
+  let compareB = { name: "Dhruv Rathee", ratings: { 1: 58.0, 2: 74.0, 3: 81.0, 5: 70.0 } as Record<number, number> };
 
   try {
     const supabase = createSupabaseAdminClient();
@@ -118,10 +118,10 @@ export default async function HomePage() {
     const { data: compareChannels } = await supabase
       .from("channels")
       .select("id, name")
-      .in("name", ["Reuters", "Dhruv Rathee"]);
+      .in("name", ["Aaj Tak", "Dhruv Rathee"]);
 
     if (compareChannels && compareChannels.length >= 2) {
-      const idA = compareChannels.find((c: any) => c.name === "Reuters")?.id;
+      const idA = compareChannels.find((c: any) => c.name === "Aaj Tak")?.id;
       const idB = compareChannels.find((c: any) => c.name === "Dhruv Rathee")?.id;
       if (idA && idB) {
         const { data: ratingsData } = await supabase
@@ -129,9 +129,7 @@ export default async function HomePage() {
           .select("channel_id, dimension_id, rating")
           .in("channel_id", [idA, idB]);
 
-        if (ratingsData) {
-          compareA.ratings = {};
-          compareB.ratings = {};
+        if (ratingsData && ratingsData.length > 0) {
           for (const r of ratingsData) {
             if (r.channel_id === idA) {
               compareA.ratings[r.dimension_id] = r.rating;
