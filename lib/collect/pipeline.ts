@@ -58,12 +58,18 @@ export async function runCollection(
     return result;
   }
 
+  const startTime = Date.now();
   const aiBudget = config.maxAiCallsPerRun;
   for (const ch of (channels ?? []) as Channel[]) {
     // Stop spending AI calls once the daily budget is gone; non-AI work and
     // slate composition still run. Remaining channels are picked up tomorrow.
     if (result.aiCalls >= aiBudget) {
       result.budgetReached = true;
+      break;
+    }
+    // Gracefully break out of the loop before hitting Vercel's serverless timeout (300s limit).
+    // This leaves a 40-second buffer for slate composition and final writes to complete.
+    if (Date.now() - startTime > 260000) {
       break;
     }
     try {
