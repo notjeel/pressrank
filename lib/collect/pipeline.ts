@@ -201,6 +201,14 @@ async function harvestStatements(
       // L2 Guard: Reject transactional metadata, links, and payment details
       if (isJunkStatement(text)) continue;
 
+      // L2 Brand Leak Guard: Reject statements containing the channel's own name or key name parts
+      const lowerText = text.toLowerCase();
+      const lowerChanName = ch.name.toLowerCase();
+      if (lowerText.includes(lowerChanName)) continue;
+      
+      const nameParts = lowerChanName.split(/\s+/).filter(part => part.length > 3 && part !== "news" && part !== "india" && part !== "official");
+      if (nameParts.some(part => lowerText.includes(part))) continue;
+
       // Provenance check: the excerpt must actually appear in the source.
       const inSource = sourceText
         .toLowerCase()
@@ -434,6 +442,27 @@ const JUNK_STATEMENT_REGEXES = [
   /watch\s*next/i,
   /playlist/i,
   /http[s]?:\/\//i, // Any raw links
+  /this\s*video/i,
+  /in\s*this\s*video/i,
+  /youtube\s*channel/i,
+  /news\s*channel/i,
+  /welcome\s*to\s*our/i,
+  /subscribe\s*to/i,
+  /copyright\s*ownership/i,
+  /ज़ी\s*न्यूज़/i,
+  /आज\s*तक/i,
+  /एनडीटीवी/i,
+  /रिपब्लिक/i,
+  /लल्लनटॉप/i,
+  /deshbhakt/i,
+  /abp\s*news/i,
+  /zee\s*news/i,
+  /aaj\s*tak/i,
+  /ndtv/i,
+  /bbc\s*news/i,
+  /reuters/i,
+  /editorial\s*focus/i,
+  /coverage\s*scope/i,
 ];
 
 function isJunkStatement(text: string): boolean {
