@@ -121,7 +121,7 @@ async function fetchStats(
   result: CollectResult
 ) {
   if (!isStale(ch.stats_fetched_at, STATS_TTL_H)) return;
-  if (ch.medium !== "youtube") return; // other platforms: AI approx is set during enrich
+  if (ch.medium !== "youtube" && !ch.youtube_channel_id && !ch.handle) return;
 
   const yt = await fetchYouTubeChannel({
     channelId: ch.youtube_channel_id,
@@ -155,7 +155,7 @@ async function harvestStatements(
   aiBudget: number
 ) {
   if (!isStale(ch.statements_fetched_at, STATEMENTS_TTL_H)) return;
-  if (ch.medium !== "youtube" || !ch.youtube_channel_id) return;
+  if (!ch.youtube_channel_id) return;
   if (result.aiCalls >= aiBudget) return;
 
   const yt = await fetchYouTubeChannel({ channelId: ch.youtube_channel_id });

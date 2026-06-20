@@ -5,6 +5,7 @@ export class GeminiProvider extends BaseProvider {
   readonly name = "gemini";
   private apiKey: string;
   private model: string;
+  private static lastCallTime = 0;
 
   constructor() {
     super();
@@ -18,6 +19,14 @@ export class GeminiProvider extends BaseProvider {
     prompt: string,
     opts?: { system?: string }
   ): Promise<T> {
+    // 15 RPM limit guard: pace calls to at least 4.2s apart
+    const now = Date.now();
+    const elapsed = now - GeminiProvider.lastCallTime;
+    if (elapsed < 4200) {
+      await new Promise((r) => setTimeout(r, 4200 - elapsed));
+    }
+    GeminiProvider.lastCallTime = Date.now();
+
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`;
     const body = {
       contents: [{ role: "user", parts: [{ text: prompt }] }],
