@@ -24,8 +24,8 @@ export default async function HomePage() {
   let topSourcing: TopRating[] = [];
   let topNonSensational: TopRating[] = [];
 
-  let compareA = { name: "Aaj Tak", ratings: { 1: 36.0, 2: 42.0, 3: 51.0, 5: 45.0 } as Record<number, number> };
-  let compareB = { name: "Dhruv Rathee", ratings: { 1: 58.0, 2: 74.0, 3: 81.0, 5: 70.0 } as Record<number, number> };
+  let compareA = { name: "Reuters", ratings: { 1: 43.0, 2: 41.7, 3: 45.5 } as Record<number, number> };
+  let compareB = { name: "Dhruv Rathee", ratings: { 1: 38.8, 2: 41.2, 3: 40.0 } as Record<number, number> };
 
   try {
     const supabase = createSupabaseAdminClient();
@@ -118,10 +118,10 @@ export default async function HomePage() {
     const { data: compareChannels } = await supabase
       .from("channels")
       .select("id, name")
-      .in("name", ["Aaj Tak", "Dhruv Rathee"]);
+      .in("name", ["Reuters", "Dhruv Rathee"]);
 
     if (compareChannels && compareChannels.length >= 2) {
-      const idA = compareChannels.find((c: any) => c.name === "Aaj Tak")?.id;
+      const idA = compareChannels.find((c: any) => c.name === "Reuters")?.id;
       const idB = compareChannels.find((c: any) => c.name === "Dhruv Rathee")?.id;
       if (idA && idB) {
         const { data: ratingsData } = await supabase
@@ -689,9 +689,9 @@ export default async function HomePage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#ea4335" }}>{compareA.name}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>{compareA.name}</span>
                 <span style={{ fontSize: 12, color: "var(--muted)" }}>vs</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>{compareB.name}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>{compareB.name}</span>
               </div>
 
               {/* Dynamic comparison sliders */}
@@ -699,24 +699,23 @@ export default async function HomePage() {
                 {[
                   { name: "Factual Precision", id: 2 },
                   { name: "Neutrality", id: 1 },
-                  { name: "Sourcing", id: 3 },
-                  { name: "Non-sensational", id: 5 }
+                  { name: "Sourcing", id: 3 }
                 ].map((dim) => {
                   const ratingA = compareA.ratings[dim.id] ?? 40.0;
                   const ratingB = compareB.ratings[dim.id] ?? 40.0;
-                  const posA = `${ratingA}%`;
-                  const posB = `${ratingB}%`;
+                  const posA = `${Math.round(ratingA)}%`;
+                  const posB = `${Math.round(ratingB)}%`;
                   return (
                     <div key={dim.id}>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
                         <span style={{ color: "var(--muted)" }}>{dim.name}</span>
-                        <span style={{ fontWeight: 600, color: "var(--fg)", fontSize: 11 }}>
-                          {ratingA.toFixed(1)} vs {ratingB.toFixed(1)}
+                        <span style={{ fontWeight: 600, color: "var(--fg)" }}>
+                          {Math.round(ratingA)} vs {Math.round(ratingB)}
                         </span>
                       </div>
                       <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>
-                        <div style={{ position: "absolute", left: `calc(${posA} - 5px)`, width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335", zIndex: 2 }} />
-                        <div style={{ position: "absolute", left: `calc(${posB} - 5px)`, width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)", zIndex: 1 }} />
+                        <div style={{ position: "absolute", left: posA, width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335" }} />
+                        <div style={{ position: "absolute", left: posB, width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)" }} />
                       </div>
                     </div>
                   );
