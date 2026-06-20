@@ -197,6 +197,10 @@ async function harvestStatements(
     for (const ex of excerpts) {
       const text = ex.text?.trim();
       if (!text || text.length < 20) continue;
+      
+      // L2 Guard: Reject transactional metadata, links, and payment details
+      if (isJunkStatement(text)) continue;
+
       // Provenance check: the excerpt must actually appear in the source.
       const inSource = sourceText
         .toLowerCase()
@@ -390,4 +394,48 @@ async function autoArchiveYearlyRatings(supabase: SupabaseClient) {
       }
     }
   }
+}
+
+const JUNK_STATEMENT_REGEXES = [
+  /upi\s*id/i,
+  /@[a-zA-Z0-9.-]*(ybl|apl|paytm|okaxis|oksbi|okicici|axl|ibl|axisbank|icici|hdfc)\b/i, // common UPI VPA handles
+  /support\s*my\s*work/i,
+  /support\s*the\s*channel/i,
+  /business\s*inquiries/i,
+  /business\s*inquiry/i,
+  /for\s*business/i,
+  /inquiries\s*:/i,
+  /inquiry\s*:/i,
+  /contact\s*info/i,
+  /contact\s*us/i,
+  /contact@/i,
+  /email\s*:/i,
+  /\b[\w.-]+@[\w.-]+\.\w{2,}\b/i, // Standard Email regex
+  /follow\s*on/i,
+  /follow\s*me/i,
+  /facebook\.com/i,
+  /twitter\.com/i,
+  /instagram\.com/i,
+  /patreon\.com/i,
+  /telegram\b/i,
+  /t\.me\//i,
+  /whatsapp/i,
+  /subscribe/i,
+  /bell\s*icon/i,
+  /use\s*code/i,
+  /coupon/i,
+  /discount/i,
+  /buy\s*my/i,
+  /merch/i,
+  /patron/i,
+  /sponsor/i,
+  /affiliate/i,
+  /click\s*here/i,
+  /watch\s*next/i,
+  /playlist/i,
+  /http[s]?:\/\//i, // Any raw links
+];
+
+function isJunkStatement(text: string): boolean {
+  return JUNK_STATEMENT_REGEXES.some((regex) => regex.test(text));
 }
