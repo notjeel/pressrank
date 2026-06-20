@@ -43,10 +43,16 @@ async function main() {
     console.log(`Auditing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(stmts.length / batchSize)}...`);
 
     const prompt = `You are auditing a database of news statements for a journalism credibility rating platform.
-Identify which of the following statements are TRIVIAL, CASUAL CHATTER, VAGUE VLOGS, PERSONAL TALK, MUSIC, OR OTHER TEXT completely useless for evaluating journalistic credibility, factual precision, sourcing, neutrality, or bias.
+Identify which of the following statements are JUNK, TRIVIAL, CASUAL, VAGUE, or NON-JOURNALISTIC (completely useless for evaluating journalistic credibility, factual precision, sourcing, neutrality, or bias).
 
-Return a JSON array of the IDs that are JUNK, VAGUE, or NON-JOURNALISTIC and should be DELETED.
-Do NOT delete actual news reporting, factual claims, or serious political/editorial opinions (even if biased, brief, or controversial). Only delete completely non-journalistic, casual, or trivial statements (e.g. pet interactions, personal chatter, gaming talk, cooking, simple daily logs).
+Return a JSON array of the IDs that are JUNK/VAGUE/NON-JOURNALISTIC and should be DELETED.
+STRICTLY DELETE:
+- Self-help, career growth, productivity tips, or workplace advice (e.g. "3 signs you're not growing at work").
+- Podcast episode introductions, titles, guest descriptions, or interview prep (e.g. "The title of the podcast episode").
+- School textbook summaries, NCERT syllabus, exam preparation guidance, or studies tips (e.g. "This video decodes Part 01 of the Civics...").
+- Personal vlogs, chat, motivate quotes, relationship advice, gaming, pet behavior, cooking, or general banter.
+
+Do NOT delete actual news reporting, factual claims, or serious political/editorial opinions on current affairs, economics, governance, tech, or science.
 
 Statements to audit:
 ${JSON.stringify(batch, null, 2)}
