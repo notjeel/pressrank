@@ -24,6 +24,9 @@ export default async function HomePage() {
   let topSourcing: TopRating[] = [];
   let topNonSensational: TopRating[] = [];
 
+  let compareA = { name: "Reuters", ratings: { 1: 43.0, 2: 41.7, 3: 45.5, 5: 42.9 } as Record<number, number> };
+  let compareB = { name: "Dhruv Rathee", ratings: { 1: 38.8, 2: 41.2, 3: 40.0, 5: 40.6 } as Record<number, number> };
+
   try {
     const supabase = createSupabaseAdminClient();
 
@@ -111,6 +114,34 @@ export default async function HomePage() {
       n_statements: r.n_statements,
     }));
 
+    // Fetch comparison ratings dynamically
+    const { data: compareChannels } = await supabase
+      .from("channels")
+      .select("id, name")
+      .in("name", ["Reuters", "Dhruv Rathee"]);
+
+    if (compareChannels && compareChannels.length >= 2) {
+      const idA = compareChannels.find((c: any) => c.name === "Reuters")?.id;
+      const idB = compareChannels.find((c: any) => c.name === "Dhruv Rathee")?.id;
+      if (idA && idB) {
+        const { data: ratingsData } = await supabase
+          .from("channel_ratings")
+          .select("channel_id, dimension_id, rating")
+          .in("channel_id", [idA, idB]);
+
+        if (ratingsData) {
+          compareA.ratings = {};
+          compareB.ratings = {};
+          for (const r of ratingsData) {
+            if (r.channel_id === idA) {
+              compareA.ratings[r.dimension_id] = r.rating;
+            } else if (r.channel_id === idB) {
+              compareB.ratings[r.dimension_id] = r.rating;
+            }
+          }
+        }
+      }
+    }
   } catch {
     // Database fallback — show zeros if DB is unreachable
   }
@@ -660,24 +691,38 @@ export default async function HomePage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>Channel A</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#ea4335" }}>{compareA.name}</span>
                 <span style={{ fontSize: 12, color: "var(--muted)" }}>vs</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>Channel B</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>{compareB.name}</span>
               </div>
 
-              {/* Illustrative comparison bars */}
+              {/* Dynamic comparison sliders */}
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {["Factual Precision", "Neutrality", "Sourcing", "Non-sensational"].map((dim) => (
-                  <div key={dim}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                      <span style={{ color: "var(--muted)" }}>{dim}</span>
-                      <span style={{ fontWeight: 600, color: "var(--accent)", fontSize: 11 }}>Live data</span>
+                {[
+                  { name: "Factual Precision", id: 2 },
+                  { name: "Neutrality", id: 1 },
+                  { name: "Sourcing", id: 3 },
+                  { name: "Non-sensational", id: 5 }
+                ].map((dim) => {
+                  const ratingA = compareA.ratings[dim.id] ?? 40.0;
+                  const ratingB = compareB.ratings[dim.id] ?? 40.0;
+                  const posA = `${ratingA}%`;
+                  const posB = `${ratingB}%`;
+                  return (
+                    <div key={dim.id}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                        <span style={{ color: "var(--muted)" }}>{dim.name}</span>
+                        <span style={{ fontWeight: 600, color: "var(--fg)", fontSize: 11 }}>
+                          {ratingA.toFixed(1)} vs {ratingB.toFixed(1)}
+                        </span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>
+                        <div style={{ position: "absolute", left: `calc(${posA} - 5px)`, width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335", zIndex: 2 }} />
+                        <div style={{ position: "absolute", left: `calc(${posB} - 5px)`, width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)", zIndex: 1 }} />
+                      </div>
                     </div>
-                    <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative", overflow: "hidden" }}>
-                      <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "60%", borderRadius: 3, background: "linear-gradient(90deg, var(--accent-soft), var(--accent))", opacity: 0.4 }} />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
