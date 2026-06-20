@@ -79,11 +79,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Restore preference on mount (client only).
   useEffect(() => {
     const saved = localStorage.getItem("pr-theme");
-    if (saved) setDark(saved === "dark");
-    else
-      setDark(
-        window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false
-      );
+    if (saved) {
+      setDark(saved === "dark");
+    } else {
+      setDark(false); // Default to light mode
+    }
   }, []);
 
   const toggle = useCallback(() => {
