@@ -29,7 +29,7 @@ interface ChannelLite {
 function LeaderboardInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dim = searchParams.get("dimension") || "factual";
+  const dim = searchParams.get("dimension") || "overall";
   const [medium, setMedium] = useState("all");
   const [type, setType] = useState("all");
   const [lang, setLang] = useState("all");
@@ -85,7 +85,7 @@ function LeaderboardInner() {
     ...Array.from(new Set(allChannels.map((c) => c[key]).filter(Boolean))) as string[],
   ];
 
-  const dimLabel = DIMS.find((d) => d.key === dim)?.label ?? dim;
+  const dimLabel = dim === "overall" ? "Overall" : (DIMS.find((d) => d.key === dim)?.label ?? dim);
 
   const pill = (active: boolean): React.CSSProperties => ({
     padding: "7px 13px",
@@ -155,6 +155,9 @@ function LeaderboardInner() {
         <div>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 6 }}>Rank by</div>
           <div style={{ display: "flex", gap: 2, padding: 3, border: "1px solid var(--line)", borderRadius: 10, background: "var(--surface)", flexWrap: "wrap", justifyContent: "center" }}>
+            <button onClick={() => setDim("overall")} style={pill(dim === "overall")}>
+              Overall
+            </button>
             {DIMS.map((d) => (
               <button key={d.key} onClick={() => setDim(d.key)} style={pill(dim === d.key)}>
                 {d.short}
