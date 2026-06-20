@@ -35,6 +35,20 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Hind:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.googleTranslateElementInit = function() {
+                new google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  includedLanguages: 'en,hi,bn,te,ta,mr,gu,kn,ml,pa',
+                  layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                  autoDisplay: false
+                }, 'google_translate_element');
+              };
+            `
+          }}
+        />
       </head>
       <body>
         <ThemeProvider>
@@ -46,20 +60,6 @@ export default function RootLayout({
 
         {/* Hidden Google Translate Target */}
         <div id="google_translate_element" style={{ display: "none" }} />
-        
-        {/* Initialize callback on window */}
-        <Script id="google-translate-init" strategy="afterInteractive">
-          {`
-            window.googleTranslateElementInit = function() {
-              new google.translate.TranslateElement({
-                pageLanguage: 'en',
-                includedLanguages: 'en,hi,bn,te,ta,mr,gu,kn,ml,pa',
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                autoDisplay: false
-              }, 'google_translate_element');
-            };
-          `}
-        </Script>
         
         {/* Load Google Translate SDK */}
         <Script

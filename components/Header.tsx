@@ -88,19 +88,8 @@ export function Header() {
 
   useEffect(() => {
     const saved = localStorage.getItem("preferred_lang");
-    if (saved && saved !== "en") {
-      let retries = 0;
-      const interval = setInterval(() => {
-        const googleCombo = document.querySelector(".goog-te-combo") as HTMLSelectElement | null;
-        if (googleCombo) {
-          googleCombo.value = saved;
-          googleCombo.dispatchEvent(new Event("change"));
-          setSelectedLang(saved);
-          clearInterval(interval);
-        }
-        retries++;
-        if (retries > 30) clearInterval(interval);
-      }, 200);
+    if (saved) {
+      setSelectedLang(saved);
     }
   }, []);
 
@@ -108,23 +97,15 @@ export function Header() {
     setSelectedLang(langCode);
     localStorage.setItem("preferred_lang", langCode);
     
-    const googleCombo = document.querySelector(".goog-te-combo") as HTMLSelectElement | null;
-    if (googleCombo) {
-      googleCombo.value = langCode;
-      googleCombo.dispatchEvent(new Event("change"));
+    if (langCode === "en") {
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname;
     } else {
-      let retries = 0;
-      const interval = setInterval(() => {
-        const retryCombo = document.querySelector(".goog-te-combo") as HTMLSelectElement | null;
-        if (retryCombo) {
-          retryCombo.value = langCode;
-          retryCombo.dispatchEvent(new Event("change"));
-          clearInterval(interval);
-        }
-        retries++;
-        if (retries > 15) clearInterval(interval);
-      }, 200);
+      document.cookie = "googtrans=/en/" + langCode + "; path=/";
+      document.cookie = "googtrans=/en/" + langCode + "; path=/; domain=" + window.location.hostname;
     }
+    
+    window.location.reload();
   }
 
   function tabStyle(active: boolean): React.CSSProperties {
