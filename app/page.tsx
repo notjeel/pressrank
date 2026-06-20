@@ -284,10 +284,10 @@ export default async function HomePage() {
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <span style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".08em", fontWeight: 600 }}>
-                  Live Slate Sandbox
+                  Blind Slate Preview
                 </span>
                 <span style={{ fontSize: 12, color: "var(--accent)", fontWeight: 500 }}>
-                  Neutrality test
+                  How it looks
                 </span>
               </div>
 
@@ -301,14 +301,14 @@ export default async function HomePage() {
                 }}
               >
                 <div style={{ fontSize: 15, lineHeight: 1.5, color: "var(--fg)", fontStyle: "italic", marginBottom: 12 }}>
-                  &quot;The source cited several anonymous officials claiming the budget was delayed, without providing any details or timeline verification.&quot;
+                  &quot;Statement from a channel you may follow — stripped of all branding, logos, and identity.&quot;
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 10.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em" }}>
                     Source Hidden
                   </span>
                   <span style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 600 }}>
-                    Checked &apos;neutral&apos; &mdash; 86%
+                    Your blind vote decides
                   </span>
                 </div>
               </div>
@@ -323,14 +323,14 @@ export default async function HomePage() {
                 }}
               >
                 <div style={{ fontSize: 15, lineHeight: 1.5, color: "var(--fg)", fontStyle: "italic", marginBottom: 12 }}>
-                  &quot;The policy change will result in immediate economic collapse across all state-owned sectors.&quot;
+                  &quot;Another statement from a completely different outlet — can you tell which is which?&quot;
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 10.5, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".06em" }}>
                     Source Hidden
                   </span>
-                  <span style={{ fontSize: 11, color: "#ea4335", fontWeight: 600 }}>
-                    Checked &apos;sensational&apos; &mdash; 14%
+                  <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600 }}>
+                    Pick the most credible
                   </span>
                 </div>
               </div>
@@ -344,8 +344,8 @@ export default async function HomePage() {
                   justifyContent: "space-between",
                 }}
               >
-                <span style={{ fontSize: 12, color: "var(--muted)" }}>Submit to reveal brand.</span>
-                <span style={{ fontSize: 12.5, color: "var(--fg)", fontWeight: 600 }}>Try the Arena above &rarr;</span>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>Sources stay hidden — always.</span>
+                <span style={{ fontSize: 12.5, color: "var(--fg)", fontWeight: 600 }}>Try the Arena &rarr;</span>
               </div>
             </div>
           </div>
@@ -552,7 +552,7 @@ export default async function HomePage() {
             <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)", fontFamily: "monospace", marginBottom: 12 }}>02</div>
             <h3 style={{ fontSize: 20, fontWeight: 600, color: "var(--fg)", marginBottom: 12 }}>You vote blindly</h3>
             <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--muted)" }}>
-              You review a randomized slate of anonymous statements. Pick the statements that best satisfy the quality dimension (e.g., Neutrality). Brand identities and logos reveal only after your vote is cast.
+              You review a randomized slate of anonymous statements. Pick the statements that best satisfy the quality dimension (e.g., Neutrality). Brand identities and logos are never revealed to voters, keeping judgments completely unbiased.
             </p>
           </div>
           <div style={{ order: 1, display: "flex", gap: 12, flexDirection: "column" }}>
@@ -587,19 +587,18 @@ export default async function HomePage() {
             >
               <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--line)", paddingBottom: 10, fontSize: 12, color: "var(--muted)", fontWeight: 600 }}>
                 <span>OUTLET</span>
-                <span>ELO RATING</span>
-                <span>CONFIDENCE BAND</span>
+                <span>RATING</span>
+                <span>CONFIDENCE</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontSize: 13.5, color: "var(--fg)", fontWeight: 600 }}>
-                <span>Reuters</span>
-                <span>91 Rating</span>
-                <span style={{ color: "var(--accent2)" }}>&plusmn;2.1</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontSize: 13.5, color: "var(--fg)", fontWeight: 600 }}>
-                <span>BBC News</span>
-                <span>85 Rating</span>
-                <span style={{ color: "var(--accent2)" }}>&plusmn;3.4</span>
-              </div>
+              {factualList.length > 0 ? factualList.slice(0, 2).map((ch, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontSize: 13.5, color: "var(--fg)", fontWeight: 600 }}>
+                  <span>{ch.name}</span>
+                  <span>{ch.rating} pts</span>
+                  <span style={{ color: "var(--accent2)" }}>Live</span>
+                </div>
+              )) : (
+                <div style={{ padding: "14px 0", fontSize: 13, color: "var(--muted)", textAlign: "center" }}>Ratings appear as votes come in.</div>
+              )}
             </div>
           </div>
         </div>
@@ -661,45 +660,24 @@ export default async function HomePage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>Aaj Tak</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>Channel A</span>
                 <span style={{ fontSize: 12, color: "var(--muted)" }}>vs</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>Dhruv Rathee</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>Channel B</span>
               </div>
 
-              {/* Mock comparison radar chart */}
+              {/* Illustrative comparison bars */}
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ color: "var(--muted)" }}>Factual Precision</span>
-                    <span style={{ fontWeight: 600, color: "var(--fg)" }}>42 vs 74</span>
+                {["Factual Precision", "Neutrality", "Sourcing", "Non-sensational"].map((dim) => (
+                  <div key={dim}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ color: "var(--muted)" }}>{dim}</span>
+                      <span style={{ fontWeight: 600, color: "var(--accent)", fontSize: 11 }}>Live data</span>
+                    </div>
+                    <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative", overflow: "hidden" }}>
+                      <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "60%", borderRadius: 3, background: "linear-gradient(90deg, var(--accent-soft), var(--accent))", opacity: 0.4 }} />
+                    </div>
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>
-                    <div style={{ position: "absolute", left: "42%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335" }} />
-                    <div style={{ position: "absolute", left: "74%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)" }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ color: "var(--muted)" }}>Neutrality</span>
-                    <span style={{ fontWeight: 600, color: "var(--fg)" }}>36 vs 58</span>
-                  </div>
-                  <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>
-                    <div style={{ position: "absolute", left: "36%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335" }} />
-                    <div style={{ position: "absolute", left: "58%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)" }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ color: "var(--muted)" }}>Sourcing</span>
-                    <span style={{ fontWeight: 600, color: "var(--fg)" }}>51 vs 81</span>
-                  </div>
-                  <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>
-                    <div style={{ position: "absolute", left: "51%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "#ea4335" }} />
-                    <div style={{ position: "absolute", left: "81%", width: 10, height: 10, top: -2, borderRadius: "50%", background: "var(--accent)" }} />
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>

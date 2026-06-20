@@ -125,9 +125,9 @@ export default function HowWeAnonymizePage() {
 
         <div style={stepCardStyle}>
           <span style={stepNumberStyle}>Step 5</span>
-          <h3 style={stepTitleStyle}>Post-Vote Reveal</h3>
+          <h3 style={stepTitleStyle}>Permanent Anonymity</h3>
           <p style={{ fontSize: 14, lineHeight: 1.5, color: "var(--muted)", margin: 0 }}>
-            Once you submit your ballot, the system records it blindly. You are then shown the reveal: which channels your selected statements actually came from. This provides immediate, transparent feedback and often surprises voters when their blind choices cross their partisan expectations.
+            Unlike other platforms, we never reveal the sources of statements, even after you vote. This ensures voters cannot game the system by learning style patterns to vote for or against specific channels. The ratings remain completely blind from start to finish.
           </p>
         </div>
       </section>
