@@ -230,6 +230,14 @@ async function composeSlates(
   const ninetyDaysAgo = new Date(Date.now() - 90 * 86_400_000).toISOString();
   await supabase.from("slates").delete().lt("created_at", ninetyDaysAgo);
 
+  // Retire statements older than 90 days from the active pool.
+  // This keeps the voting pool fresh and relevant while preserving historical vote data.
+  await supabase
+    .from("statements")
+    .update({ active: false })
+    .lt("harvested_at", ninetyDaysAgo)
+    .eq("active", true);
+
   // Stop composing if we already have plenty of fresh slates in rotation.
   // This prevents cron spamming while ensuring new slates can always enter.
   const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
