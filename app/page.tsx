@@ -699,9 +699,15 @@ export default async function HomePage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>{compareA.name}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ea4335" }} />
+                  {compareA.name}
+                </span>
                 <span style={{ fontSize: 12, color: "var(--muted)" }}>vs</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>{compareB.name}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  {compareB.name}
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent)" }} />
+                </span>
               </div>
 
               {/* Dynamic comparison sliders */}
