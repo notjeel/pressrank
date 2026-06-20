@@ -82,6 +82,13 @@ export async function runCollection(
   }
 
   result.slatesCreated = await composeSlates(supabase, result);
+
+  try {
+    await autoArchiveYearlyRatings(supabase);
+  } catch (e) {
+    result.errors.push(`auto-archive: ${(e as Error).message}`);
+  }
+
   return result;
 }
 
@@ -332,4 +339,55 @@ function buildSlate(
 function isStale(ts: string | null, ttlHours: number): boolean {
   if (!ts) return true;
   return Date.now() - new Date(ts).getTime() > ttlHours * 3600_000;
+}
+
+async function autoArchiveYearlyRatings(supabase: SupabaseClient) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  
+  // Anniversary is June 20th of every year (first archive runs on June 20, 2027)
+  const archiveDate = new Date(`${currentYear}-06-20T00:00:00Z`);
+
+  if (now.getTime() >= archiveDate.getTime()) {
+    // Check if we already archived this year
+    const { count, error: countErr } = await supabase
+      .from("yearly_leaderboard_snapshots")
+      .select("id", { count: "exact", head: true })
+      .eq("archive_year", currentYear);
+      
+    if (countErr) {
+      throw new Error(`check archive: ${countErr.message}`);
+    }
+
+    if ((count ?? 0) === 0) {
+      console.log(`Auto archiving yearly ratings for ${currentYear}...`);
+      const { data: ratings, error: ratingsErr } = await supabase
+        .from("channel_ratings")
+        .select("*");
+        
+      if (ratingsErr) {
+        throw new Error(`fetch ratings: ${ratingsErr.message}`);
+      }
+
+      if (ratings?.length) {
+        const rows = ratings.map((r) => ({
+          archive_year: currentYear,
+          channel_id: r.channel_id,
+          dimension_id: r.dimension_id,
+          rating: r.rating,
+          sigma: r.sigma,
+          n_statements: r.n_statements,
+          exposure: r.exposure,
+        }));
+
+        const { error: insertErr } = await supabase
+          .from("yearly_leaderboard_snapshots")
+          .insert(rows);
+
+        if (insertErr) {
+          throw new Error(`insert snapshots: ${insertErr.message}`);
+        }
+      }
+    }
+  }
 }
