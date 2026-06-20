@@ -62,6 +62,8 @@ Do not invent facts. If unsure, omit the field.`;
 
 Rules:
 - Each excerpt must be copied EXACTLY from the text (no paraphrasing, no editing).
+- The excerpt must represent actual NEWS, FACTUAL CLAIMS, or SUBSTANTIVE EDITORIAL OPINION.
+- STRICTLY EXCLUDE: Contact details, business inquiries, email addresses, phone numbers, websites, social media links (WhatsApp, Telegram, Patreon), boilerplate text, channel descriptions, intros, sponsor reads, or calls to action (like "subscribe" or "Business Inquiries : contact@...").
 - 1-3 sentences each; long enough to carry meaning, short enough to read on a phone.
 - Choose a REPRESENTATIVE spread across the text — do NOT cherry-pick only the best or worst.
 - Strip station-specific sign-offs/tags/catchphrases that would reveal the source.
