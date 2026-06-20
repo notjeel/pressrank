@@ -85,6 +85,7 @@ export function Header() {
   const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState("en");
+  const [langOpen, setLangOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("preferred_lang");
@@ -92,6 +93,18 @@ export function Header() {
       setSelectedLang(saved);
     }
   }, []);
+
+  useEffect(() => {
+    if (!langOpen) return;
+    function handleOutsideClick(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".pr-lang-container")) {
+        setLangOpen(false);
+      }
+    }
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [langOpen]);
 
   function changeLanguage(langCode: string) {
     setSelectedLang(langCode);
@@ -190,53 +203,97 @@ export function Header() {
 
           {/* Right actions */}
           <div className="pr-header-right" style={{ flex: 1, display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
-            {/* Custom Language Switcher */}
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <select
-                value={selectedLang}
-                onChange={(e) => changeLanguage(e.target.value)}
+            {/* Custom Language Switcher Dropdown */}
+            <div className="pr-lang-container" style={{ position: "relative", display: "inline-block" }}>
+              <button
+                onClick={() => setLangOpen(!langOpen)}
                 style={{
-                  padding: "7px 26px 7px 11px",
-                  fontSize: "12.5px",
-                  fontWeight: 500,
-                  color: "var(--muted)",
-                  borderRadius: "8px",
-                  border: "1px solid var(--line)",
-                  background: "var(--surface)",
-                  cursor: "pointer",
-                  outline: "none",
-                  appearance: "none",
-                  WebkitAppearance: "none",
-                  MozAppearance: "none",
-                  fontFamily: "inherit",
-                }}
-              >
-                {LANGUAGES.map((l) => (
-                  <option
-                    key={l.code}
-                    value={l.code}
-                    style={{ background: "var(--surface)", color: "var(--fg)" }}
-                  >
-                    {l.label}
-                  </option>
-                ))}
-              </select>
-              <div
-                style={{
-                  position: "absolute",
-                  right: "9px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  pointerEvents: "none",
-                  color: "var(--muted)",
                   display: "flex",
                   alignItems: "center",
+                  gap: 5,
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  color: "var(--muted)",
+                  padding: "6px 8px",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  transition: "color 0.15s, background 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "var(--fg)";
+                  e.currentTarget.style.background = "var(--accent-soft)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "var(--muted)";
+                  e.currentTarget.style.background = "transparent";
                 }}
               >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="m6 9 6 6 6-6" />
+                {/* Globe Icon */}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.85 }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                  <path d="M2 12h20" />
                 </svg>
-              </div>
+                <span style={{ textTransform: "uppercase", fontSize: 12.5, fontWeight: 600, letterSpacing: "0.02em" }}>
+                  {selectedLang}
+                </span>
+              </button>
+
+              {langOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: "100%",
+                    marginTop: 6,
+                    background: "var(--surface)",
+                    border: "1px solid var(--line)",
+                    borderRadius: 8,
+                    padding: 4,
+                    minWidth: 140,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    zIndex: 100,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                  }}
+                >
+                  {LANGUAGES.map((l) => (
+                    <button
+                      key={l.code}
+                      onClick={() => {
+                        changeLanguage(l.code);
+                        setLangOpen(false);
+                      }}
+                      style={{
+                        padding: "6px 10px",
+                        fontSize: 12.5,
+                        fontWeight: selectedLang === l.code ? 600 : 500,
+                        color: selectedLang === l.code ? "var(--fg)" : "var(--muted)",
+                        borderRadius: 6,
+                        textAlign: "left",
+                        width: "100%",
+                        background: selectedLang === l.code ? "var(--accent-soft)" : "transparent",
+                        transition: "background 0.1s, color 0.1s",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (selectedLang !== l.code) {
+                          e.currentTarget.style.background = "color-mix(in srgb, var(--line) 40%, transparent)";
+                          e.currentTarget.style.color = "var(--fg)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedLang !== l.code) {
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = "var(--muted)";
+                        }
+                      }}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button
