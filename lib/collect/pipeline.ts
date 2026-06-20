@@ -237,7 +237,7 @@ async function composeSlates(
     .from("slates")
     .select("id", { count: "exact", head: true })
     .gte("created_at", sevenDaysAgo);
-  if ((existingRecent ?? 0) >= 150) return 0;
+  if ((existingRecent ?? 0) >= 120) return 0;
 
   // Pull active statements with their channel so we can enforce ≤1 per channel.
   const { data: stmts } = await supabase
@@ -257,12 +257,11 @@ async function composeSlates(
     existingSignatures.add(`${s.kind}:${s.dimension_id}:${sortedIds}`);
   }
 
-  // Several slates per dimension per run, each a fresh randomized draw — so a
-  // channel's statements appear across enough slates to accrue a rating
-  // (≤1 statement per channel per slate keeps picks discriminating between
-  // channels). More slates also means more voting variety.
-  const TOPK_PER_DIM = 4;
-  const PAIR_PER_DIM = 2;
+  // Several slates per dimension per run, each a fresh randomized draw.
+  // Slowed down to 2 TOPK and 1 PAIR per dimension (15 slates total per run)
+  // to grow the pool moderately.
+  const TOPK_PER_DIM = 2;
+  const PAIR_PER_DIM = 1;
 
   let created = 0;
   for (const dim of dims) {
