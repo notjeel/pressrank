@@ -112,43 +112,13 @@ export default async function HomePage() {
     }));
 
   } catch {
-    // Database fallback
+    // Database fallback — show zeros if DB is unreachable
   }
 
-  // Populate mock fallbacks if empty (for fresh local installs to look premium immediately)
-  if (votesCount === 0) votesCount = 14210;
-  if (channelsCount === 0) channelsCount = 10;
-  if (usersCount === 0) usersCount = 894;
-  if (statementsCount === 0) statementsCount = 186;
-
-  const mockFactual: TopRating[] = [
-    { rank: 1, name: "Reuters", logo: "", medium: "web", rating: 91, n_statements: 24 },
-    { rank: 2, name: "BBC News", logo: "", medium: "youtube", rating: 85, n_statements: 18 },
-    { rank: 3, name: "Associated Press", logo: "", medium: "youtube", rating: 83, n_statements: 15 }
-  ];
-
-  const mockNeutrality: TopRating[] = [
-    { rank: 1, name: "Reuters", logo: "", medium: "web", rating: 88, n_statements: 24 },
-    { rank: 2, name: "Associated Press", logo: "", medium: "youtube", rating: 84, n_statements: 15 },
-    { rank: 3, name: "NDTV", logo: "", medium: "youtube", rating: 79, n_statements: 12 }
-  ];
-
-  const mockSourcing: TopRating[] = [
-    { rank: 1, name: "Reuters", logo: "", medium: "web", rating: 93, n_statements: 24 },
-    { rank: 2, name: "The Lallantop", logo: "", medium: "youtube", rating: 81, n_statements: 19 },
-    { rank: 3, name: "Vox", logo: "", medium: "youtube", rating: 78, n_statements: 14 }
-  ];
-
-  const mockNonSensational: TopRating[] = [
-    { rank: 1, name: "Reuters", logo: "", medium: "web", rating: 90, n_statements: 24 },
-    { rank: 2, name: "Johnny Harris", logo: "", medium: "youtube", rating: 82, n_statements: 16 },
-    { rank: 3, name: "The Print", logo: "", medium: "youtube", rating: 76, n_statements: 11 }
-  ];
-
-  const factualList = topFactual.length ? topFactual : mockFactual;
-  const neutralityList = topNeutrality.length ? topNeutrality : mockNeutrality;
-  const sourcingList = topSourcing.length ? topSourcing : mockSourcing;
-  const nonSensationalList = topNonSensational.length ? topNonSensational : mockNonSensational;
+  const factualList = topFactual;
+  const neutralityList = topNeutrality;
+  const sourcingList = topSourcing;
+  const nonSensationalList = topNonSensational;
 
   // Custom inline styles for landing page (fully wired to CSS vars)
   const sectionStyle: React.CSSProperties = {
@@ -413,7 +383,9 @@ export default async function HomePage() {
                 <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Verifiable facts over rumors</div>
               </div>
             </div>
-            {factualList.map((ch, idx) => (
+            {factualList.length === 0 ? (
+              <div style={{ padding: "18px 0", fontSize: 13, color: "var(--muted)", textAlign: "center" }}>Not enough votes yet — cast some in the Arena.</div>
+            ) : factualList.map((ch, idx) => (
               <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
@@ -434,7 +406,9 @@ export default async function HomePage() {
                 <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Objective, non-loaded tone</div>
               </div>
             </div>
-            {neutralityList.map((ch, idx) => (
+            {neutralityList.length === 0 ? (
+              <div style={{ padding: "18px 0", fontSize: 13, color: "var(--muted)", textAlign: "center" }}>Not enough votes yet — cast some in the Arena.</div>
+            ) : neutralityList.map((ch, idx) => (
               <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
@@ -455,7 +429,9 @@ export default async function HomePage() {
                 <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Specific, verifiable sources</div>
               </div>
             </div>
-            {sourcingList.map((ch, idx) => (
+            {sourcingList.length === 0 ? (
+              <div style={{ padding: "18px 0", fontSize: 13, color: "var(--muted)", textAlign: "center" }}>Not enough votes yet — cast some in the Arena.</div>
+            ) : sourcingList.map((ch, idx) => (
               <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
@@ -476,7 +452,9 @@ export default async function HomePage() {
                 <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Least sensational phrasing</div>
               </div>
             </div>
-            {nonSensationalList.map((ch, idx) => (
+            {nonSensationalList.length === 0 ? (
+              <div style={{ padding: "18px 0", fontSize: 13, color: "var(--muted)", textAlign: "center" }}>Not enough votes yet — cast some in the Arena.</div>
+            ) : nonSensationalList.map((ch, idx) => (
               <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: idx < 2 ? "1px solid var(--line)" : "none" }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
