@@ -93,11 +93,26 @@ export async function fetchVideoTranscript(
   videoId: string
 ): Promise<string> {
   try {
-    const res = await fetch(
+    let res = await fetch(
       `https://video.google.com/timedtext?lang=en&v=${videoId}`
     );
-    if (!res.ok) return "";
-    const xml = await res.text();
+    let xml = "";
+    if (res.ok) {
+      xml = await res.text();
+    }
+    
+    // If English transcript is empty/not found, try Hindi fallback
+    if (!xml || xml.includes('error="')) {
+      res = await fetch(
+        `https://video.google.com/timedtext?lang=hi&v=${videoId}`
+      );
+      if (res.ok) {
+        xml = await res.text();
+      }
+    }
+
+    if (!xml || xml.includes('error="')) return "";
+
     // Strip XML tags, decode a few entities.
     const text = xml
       .replace(/<[^>]+>/g, " ")

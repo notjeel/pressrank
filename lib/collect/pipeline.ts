@@ -235,6 +235,17 @@ async function composeSlates(
     .eq("active", true);
   if (!stmts || stmts.length < 4) return 0;
 
+  // Fetch existing slates to prevent duplicates
+  const { data: existingSlates } = await supabase
+    .from("slates")
+    .select("dimension_id, kind, statement_ids");
+  
+  const existingSignatures = new Set<string>();
+  for (const s of existingSlates ?? []) {
+    const sortedIds = [...(s.statement_ids as string[] ?? [])].sort().join(",");
+    existingSignatures.add(`${s.kind}:${s.dimension_id}:${sortedIds}`);
+  }
+
   // Several slates per dimension per run, each a fresh randomized draw — so a
   // channel's statements appear across enough slates to accrue a rating
   // (≤1 statement per channel per slate keeps picks discriminating between
@@ -247,6 +258,11 @@ async function composeSlates(
     for (let i = 0; i < TOPK_PER_DIM; i++) {
       const topk = buildSlate(stmts, 7);
       if (topk.length >= 4) {
+        const sortedIds = [...topk].sort().join(",");
+        const sig = `topk:${dim.id}:${sortedIds}`;
+        if (existingSignatures.has(sig)) continue;
+        existingSignatures.add(sig);
+
         await supabase.from("slates").insert({
           kind: "topk",
           dimension_id: dim.id,
@@ -259,6 +275,11 @@ async function composeSlates(
     for (let i = 0; i < PAIR_PER_DIM; i++) {
       const pair = buildSlate(stmts, 2);
       if (pair.length === 2) {
+        const sortedIds = [...pair].sort().join(",");
+        const sig = `pairwise:${dim.id}:${sortedIds}`;
+        if (existingSignatures.has(sig)) continue;
+        existingSignatures.add(sig);
+
         await supabase.from("slates").insert({
           kind: "pairwise",
           dimension_id: dim.id,
