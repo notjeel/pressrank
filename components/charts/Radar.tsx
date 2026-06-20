@@ -18,9 +18,9 @@ export function Radar({
   withBands?: boolean;
 }) {
   const { pal } = useTheme();
-  const W = 300,
+  const W = 380,
     H = 300,
-    cx = 150,
+    cx = 190,
     cy = 150,
     R = 98;
   const ang = (i: number) => -Math.PI / 2 + (i * 2 * Math.PI) / DIMS.length;
@@ -94,7 +94,7 @@ export function Radar({
     <svg
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
-      style={{ maxWidth: 330, height: "auto", display: "block" }}
+      style={{ maxWidth: 380, height: "auto", display: "block" }}
       role="img"
       aria-label="Radar chart of trust dimensions"
     >
