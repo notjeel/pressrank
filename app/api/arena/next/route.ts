@@ -76,25 +76,48 @@ export async function GET(req: NextRequest) {
       { status: 404 }
     );
   }
-  const slate = fresh[Math.floor(Math.random() * fresh.length)];
+  let slate = null;
+  let ordered: any[] = [];
+
+  const maxAttempts = 15;
+  for (let attempt = 0; attempt < maxAttempts && fresh.length > 0; attempt++) {
+    const idx = Math.floor(Math.random() * fresh.length);
+    const candidate = fresh[idx];
+
+    const { data: statements } = await admin
+      .from("statements")
+      .select("id, text, context")
+      .in("id", candidate.statement_ids as string[]);
+
+    const byId = new Map((statements ?? []).map((s) => [s.id, s]));
+    const matched = (candidate.statement_ids as string[])
+      .map((id) => byId.get(id))
+      .filter(Boolean);
+
+    const minRequired = candidate.kind === "pairwise" ? 2 : 4;
+    if (matched.length >= minRequired) {
+      slate = candidate;
+      ordered = matched.sort(() => Math.random() - 0.5);
+      break;
+    } else {
+      // Auto-delete the broken slate from DB since some statements are missing
+      await admin.from("slates").delete().eq("id", candidate.id);
+      fresh.splice(idx, 1);
+    }
+  }
+
+  if (!slate) {
+    return NextResponse.json(
+      { error: "No valid slates found. Check back as new data comes in." },
+      { status: 404 }
+    );
+  }
 
   const { data: dim } = await admin
     .from("dimensions")
     .select("id, key, label, question")
     .eq("id", slate.dimension_id)
     .maybeSingle();
-
-  // Fetch ONLY text + context — never the channel link.
-  const { data: statements } = await admin
-    .from("statements")
-    .select("id, text, context")
-    .in("id", slate.statement_ids as string[]);
-
-  const byId = new Map((statements ?? []).map((s) => [s.id, s]));
-  const ordered = (slate.statement_ids as string[])
-    .map((id) => byId.get(id))
-    .filter(Boolean)
-    .sort(() => Math.random() - 0.5);
 
   return NextResponse.json({
     slate_id: slate.id,
