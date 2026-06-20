@@ -153,7 +153,7 @@ export function Scatter({
     const cy = Y(hp.y);
     const label = hp.channel.name;
     const sub = isBC
-      ? `${hp.channel.medium} · ${Math.round(hp.x)}`
+      ? `${hp.channel.medium} · ${hp.x.toFixed(1)}`
       : `${hp.channel.medium} · ${fmtReach(hp.x)}`;
     const w = Math.max(label.length, sub.length) * 6.4 + 18;
     let tx = cx + 10;

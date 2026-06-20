@@ -210,7 +210,7 @@ function LeaderboardInner() {
               </div>
               <div style={{ fontSize: 13, color: "var(--muted)" }}>{r.channel.medium}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 16, width: 34 }}>{r.rating.toFixed(0)}</div>
+                <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 16, width: 34 }}>{r.rating.toFixed(1)}</div>
                 <div style={{ flex: 1, minWidth: 60 }}>
                   <MiniBar rating={r.rating} sigma={r.sigma} />
                 </div>

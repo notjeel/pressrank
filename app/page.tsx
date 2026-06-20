@@ -66,7 +66,7 @@ export default async function HomePage() {
       name: r.channel?.name ?? "Unknown",
       logo: r.channel?.logo_url ?? "",
       medium: r.channel?.medium ?? "youtube",
-      rating: Math.round(r.rating),
+      rating: r.rating,
       n_statements: r.n_statements,
     }));
 
@@ -84,7 +84,7 @@ export default async function HomePage() {
       name: r.channel?.name ?? "Unknown",
       logo: r.channel?.logo_url ?? "",
       medium: r.channel?.medium ?? "youtube",
-      rating: Math.round(r.rating),
+      rating: r.rating,
       n_statements: r.n_statements,
     }));
 
@@ -102,7 +102,7 @@ export default async function HomePage() {
       name: r.channel?.name ?? "Unknown",
       logo: r.channel?.logo_url ?? "",
       medium: r.channel?.medium ?? "youtube",
-      rating: Math.round(r.rating),
+      rating: r.rating,
       n_statements: r.n_statements,
     }));
 
@@ -120,7 +120,7 @@ export default async function HomePage() {
       name: r.channel?.name ?? "Unknown",
       logo: r.channel?.logo_url ?? "",
       medium: r.channel?.medium ?? "youtube",
-      rating: Math.round(r.rating),
+      rating: r.rating,
       n_statements: r.n_statements,
     }));
 
@@ -429,7 +429,7 @@ export default async function HomePage() {
                 <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
                 <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating.toFixed(1)}</span>
               </div>
             ))}
           </div>
@@ -452,7 +452,7 @@ export default async function HomePage() {
                 <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
                 <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating.toFixed(1)}</span>
               </div>
             ))}
           </div>
@@ -475,7 +475,7 @@ export default async function HomePage() {
                 <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
                 <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating.toFixed(1)}</span>
               </div>
             ))}
           </div>
@@ -498,7 +498,7 @@ export default async function HomePage() {
                 <span style={{ fontSize: 13, fontWeight: 700, color: idx === 0 ? "#f1c40f" : idx === 1 ? "var(--faint)" : "#e67e22", width: 14 }}>{ch.rank}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, flex: 1, color: "var(--fg)" }}>{ch.name}</span>
                 <span style={{ fontSize: 11.5, color: "var(--muted)" }}>{ch.medium}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}>{ch.rating.toFixed(1)}</span>
               </div>
             ))}
           </div>
@@ -719,14 +719,14 @@ export default async function HomePage() {
                 ].map((dim) => {
                   const ratingA = compareA.ratings[dim.id] ?? 40.0;
                   const ratingB = compareB.ratings[dim.id] ?? 40.0;
-                  const posA = `${Math.round(ratingA)}%`;
-                  const posB = `${Math.round(ratingB)}%`;
+                  const posA = `${ratingA}%`;
+                  const posB = `${ratingB}%`;
                   return (
                     <div key={dim.id}>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
                         <span style={{ color: "var(--muted)" }}>{dim.name}</span>
                         <span style={{ fontWeight: 600, color: "var(--fg)" }}>
-                          {Math.round(ratingA)} vs {Math.round(ratingB)}
+                          {ratingA.toFixed(1)} vs {ratingB.toFixed(1)}
                         </span>
                       </div>
                       <div style={{ height: 6, borderRadius: 3, background: "var(--bg)", position: "relative" }}>

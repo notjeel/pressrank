@@ -61,9 +61,9 @@ export default function SharePage() {
 
   const stats = feat
     ? [
-        { value: feat.factual.toFixed(0), label: "Factual" },
-        { value: feat.neutrality.toFixed(0), label: "Neutrality" },
-        { value: "±" + feat.factualSigma.toFixed(0), label: "confidence" },
+        { value: feat.factual.toFixed(1), label: "Factual" },
+        { value: feat.neutrality.toFixed(1), label: "Neutrality" },
+        { value: "±" + feat.factualSigma.toFixed(1), label: "confidence" },
       ]
     : [];
 
