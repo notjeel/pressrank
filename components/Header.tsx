@@ -194,7 +194,7 @@ export function Header() {
               <img
                 src="/logo.png"
                 alt="PressRank Logo"
-                style={{ width: 25, height: 25, objectFit: "contain" }}
+                style={{ width: 36, height: 36, objectFit: "contain", margin: "-6px 0" }}
               />
               <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-.025em", color: "var(--fg)" }}>
                 PressRank
