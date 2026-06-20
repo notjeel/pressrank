@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/lib/ui/theme";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CookieConsent } from "@/components/CookieConsent";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "PressRank — Blind community ratings for news channels",
@@ -42,6 +43,29 @@ export default function RootLayout({
           <Footer />
           <CookieConsent />
         </ThemeProvider>
+
+        {/* Hidden Google Translate Target */}
+        <div id="google_translate_element" style={{ display: "none" }} />
+        
+        {/* Initialize callback on window */}
+        <Script id="google-translate-init" strategy="afterInteractive">
+          {`
+            window.googleTranslateElementInit = function() {
+              new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi,bn,te,ta,mr,gu,kn,ml,pa',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+              }, 'google_translate_element');
+            };
+          `}
+        </Script>
+        
+        {/* Load Google Translate SDK */}
+        <Script
+          src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

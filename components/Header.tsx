@@ -2,9 +2,22 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/ui/theme";
 import { useAuth } from "@/lib/ui/useAuth";
+
+const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "hi", label: "Hindi (हिंदी)" },
+  { code: "bn", label: "Bengali (বাংলা)" },
+  { code: "te", label: "Telugu (తెలుగు)" },
+  { code: "ta", label: "Tamil (தமிழ்)" },
+  { code: "mr", label: "Marathi (मराठी)" },
+  { code: "gu", label: "Gujarati (ગુજરાતી)" },
+  { code: "kn", label: "Kannada (ಕನ್ನಡ)" },
+  { code: "ml", label: "Malayalam (മലയാളം)" },
+  { code: "pa", label: "Punjabi (ਪੰਜਾਬी)" },
+];
 
 const TABS: { href: string; label: string; icon: React.ReactNode; match: (p: string) => boolean }[] = [
   {
@@ -71,6 +84,48 @@ export function Header() {
   const { dark, toggle } = useTheme();
   const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedLang, setSelectedLang] = useState("en");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("preferred_lang");
+    if (saved && saved !== "en") {
+      let retries = 0;
+      const interval = setInterval(() => {
+        const googleCombo = document.querySelector(".goog-te-combo") as HTMLSelectElement | null;
+        if (googleCombo) {
+          googleCombo.value = saved;
+          googleCombo.dispatchEvent(new Event("change"));
+          setSelectedLang(saved);
+          clearInterval(interval);
+        }
+        retries++;
+        if (retries > 30) clearInterval(interval);
+      }, 200);
+    }
+  }, []);
+
+  function changeLanguage(langCode: string) {
+    setSelectedLang(langCode);
+    localStorage.setItem("preferred_lang", langCode);
+    
+    const googleCombo = document.querySelector(".goog-te-combo") as HTMLSelectElement | null;
+    if (googleCombo) {
+      googleCombo.value = langCode;
+      googleCombo.dispatchEvent(new Event("change"));
+    } else {
+      let retries = 0;
+      const interval = setInterval(() => {
+        const retryCombo = document.querySelector(".goog-te-combo") as HTMLSelectElement | null;
+        if (retryCombo) {
+          retryCombo.value = langCode;
+          retryCombo.dispatchEvent(new Event("change"));
+          clearInterval(interval);
+        }
+        retries++;
+        if (retries > 15) clearInterval(interval);
+      }, 200);
+    }
+  }
 
   function tabStyle(active: boolean): React.CSSProperties {
     return {
@@ -154,6 +209,55 @@ export function Header() {
 
           {/* Right actions */}
           <div className="pr-header-right" style={{ flex: 1, display: "flex", gap: 10, alignItems: "center", justifyContent: "flex-end" }}>
+            {/* Custom Language Switcher */}
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <select
+                value={selectedLang}
+                onChange={(e) => changeLanguage(e.target.value)}
+                style={{
+                  padding: "7px 26px 7px 11px",
+                  fontSize: "12.5px",
+                  fontWeight: 500,
+                  color: "var(--muted)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--line)",
+                  background: "var(--surface)",
+                  cursor: "pointer",
+                  outline: "none",
+                  appearance: "none",
+                  WebkitAppearance: "none",
+                  MozAppearance: "none",
+                  fontFamily: "inherit",
+                }}
+              >
+                {LANGUAGES.map((l) => (
+                  <option
+                    key={l.code}
+                    value={l.code}
+                    style={{ background: "var(--surface)", color: "var(--fg)" }}
+                  >
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+              <div
+                style={{
+                  position: "absolute",
+                  right: "9px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  pointerEvents: "none",
+                  color: "var(--muted)",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </div>
+            </div>
+
             <button
               onClick={toggle}
               title="Toggle theme"
