@@ -31,7 +31,7 @@ Design and build the frontend for **PressRank**, a web app that gives blind, com
    - Hero: two scatter maps side by side —
      - **Bias × Credibility**: `GET /api/scatter?x=neutrality&y=factual` (label quadrants).
      - **Reach × Trust**: `GET /api/scatter?x=reach&y=factual` (x = audience size, y = a quality rating; surfaces the "huge reach, low trust" quadrant). Plot each point as the channel; tooltip with name + medium.
-   - Below: a sortable table from `GET /api/leaderboard?dimension=` with a dimension switcher (neutrality, factual, sourcing, fact_vs_opinion, non_sensational) and filters for medium / content_type / language. Show `rating`, a confidence band (`±sigma`), and `n_statements`. Make rows link to the profile.
+   - Below: a sortable table from `GET /api/leaderboard?dimension=` with a dimension switcher (neutrality, factual, sourcing, non_godi_media, non_sensational) and filters for medium / content_type / language. Show `rating`, a confidence band (`±sigma`), and `n_statements`. Make rows link to the profile.
 
 3. **Channel profile** — `GET /api/channels/:id`
    - Header: name, verified tick, medium/type/content_type/language/country tags, reach stats (labeled "context only — not part of the rating").

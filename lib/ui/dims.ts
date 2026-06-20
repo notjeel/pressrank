@@ -3,7 +3,7 @@ export const DIMS: { key: string; label: string; short: string }[] = [
   { key: "neutrality", label: "Neutrality", short: "Neutrality" },
   { key: "factual", label: "Factual accuracy", short: "Factual" },
   { key: "sourcing", label: "Sourcing", short: "Sourcing" },
-  { key: "fact_vs_opinion", label: "Fact vs opinion", short: "Fact vs opinion" },
+  { key: "non_godi_media", label: "Non-Godi Media", short: "Non-Godi Media" },
   { key: "non_sensational", label: "Non-sensational", short: "Non-sensational" },
 ];
 

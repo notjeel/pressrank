@@ -56,7 +56,7 @@ export function Footer() {
             <Link href="/leaderboard?dimension=factual" style={linkStyle}>Factual precision</Link>
             <Link href="/leaderboard?dimension=neutrality" style={linkStyle}>Neutrality</Link>
             <Link href="/leaderboard?dimension=sourcing" style={linkStyle}>Sourcing</Link>
-            <Link href="/leaderboard?dimension=fact_vs_opinion" style={linkStyle}>Fact vs. opinion</Link>
+            <Link href="/leaderboard?dimension=non_godi_media" style={linkStyle}>Non-Godi Media</Link>
             <Link href="/leaderboard?dimension=non_sensational" style={linkStyle}>Non-sensational</Link>
           </div>
 

@@ -100,7 +100,7 @@ Change `AI_PROVIDER` and the matching keys — no code changes. Adapters: `lib/a
 | GET | `/api/arena/next` | `kind=topk\|pairwise, dimension?` | `{ slate_id, kind, max_pick, question, dimension, statements:[{id,text,context}] }` (no source) |
 | POST | `/api/arena/vote` | `{ slate_id, selected_statement_ids[], turnstile_token? }` (auth) | `{ ok, weight, reveal:[{statement_id, selected, channel}] }` |
 
-Dimension keys: `neutrality, factual, sourcing, fact_vs_opinion, non_sensational`.
+Dimension keys: `neutrality, factual, sourcing, non_godi_media, non_sensational`.
 
 ---
 

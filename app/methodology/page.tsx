@@ -113,9 +113,9 @@ export default function MethodologyPage() {
             </p>
           </div>
           <div style={dimItemStyle}>
-            <strong style={{ fontSize: 15, color: "var(--fg)" }}>Fact vs. Opinion</strong>
+            <strong style={{ fontSize: 15, color: "var(--fg)" }}>Non-Godi Media</strong>
             <p style={{ fontSize: 13.5, color: "var(--muted)", margin: "4px 0 0" }}>
-              <em>“Which best separates verifiable fact from opinion?”</em> Assesses how clearly commentary is distinguished from news reporting.
+              <em>“Which statement is most independent of government narrative or establishment propaganda?”</em> Assesses how independent the reporting is from state narratives.
             </p>
           </div>
           <div style={dimItemStyle}>

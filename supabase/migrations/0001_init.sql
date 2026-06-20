@@ -39,7 +39,7 @@ insert into dimensions (key, label, question, sort) values
   ('neutrality',     'Neutrality',          'Which of these is worded most neutrally?', 1),
   ('factual',        'Factual precision',   'Which is most precise about what is actually known vs. speculation?', 2),
   ('sourcing',       'Sourcing',            'Which is best sourced / most specific about where it comes from?', 3),
-  ('fact_vs_opinion','Fact vs. opinion',    'Which best separates verifiable fact from opinion?', 4),
+  ('non_godi_media', 'Non-Godi Media',     'Which statement is most independent of government narrative or establishment propaganda?', 4),
   ('non_sensational','Calm (non-sensational)','Which is the least sensational / clickbait-driven?', 5)
 on conflict (key) do nothing;
 
