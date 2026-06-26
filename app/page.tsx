@@ -203,7 +203,7 @@ export default async function HomePage() {
     <div style={{ background: "var(--bg)", color: "var(--fg)", overflowX: "hidden", transition: "background 0.15s, color 0.15s" }}>
       {/* 1. HERO SECTION */}
       <section style={{ ...sectionStyle, padding: "90px clamp(15px,5vw,40px) 70px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 48, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: 48, alignItems: "center" }}>
           <div>
             <div style={badgeStyle}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
@@ -410,7 +410,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20, marginBottom: 44 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 250px), 1fr))", gap: 20, marginBottom: 44 }}>
           {/* Box 1: Factual precision */}
           <div style={cardStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
@@ -557,7 +557,7 @@ export default async function HomePage() {
         </div>
 
         {/* Step 1 */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 48, alignItems: "center", marginBottom: 70 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 48, alignItems: "center", marginBottom: 70 }}>
           <div>
             <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)", fontFamily: "monospace", marginBottom: 12 }}>01</div>
             <h3 style={{ fontSize: 20, fontWeight: 600, color: "var(--fg)", marginBottom: 12 }}>We collect transcripts</h3>
@@ -586,7 +586,7 @@ export default async function HomePage() {
         </div>
 
         {/* Step 2 */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 48, alignItems: "center", marginBottom: 70 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 48, alignItems: "center", marginBottom: 70 }}>
           <div style={{ order: 2 }}>
             <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)", fontFamily: "monospace", marginBottom: 12 }}>02</div>
             <h3 style={{ fontSize: 20, fontWeight: 600, color: "var(--fg)", marginBottom: 12 }}>You vote blindly</h3>
@@ -607,7 +607,7 @@ export default async function HomePage() {
         </div>
 
         {/* Step 3 */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 48, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 48, alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 32, fontWeight: 700, color: "var(--accent)", fontFamily: "monospace", marginBottom: 12 }}>03</div>
             <h3 style={{ fontSize: 20, fontWeight: 600, color: "var(--fg)", marginBottom: 12 }}>Every vote refines the leaderboard</h3>
@@ -679,7 +679,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 48, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: 48, alignItems: "center" }}>
           <div>
             <ul style={{ paddingLeft: 20, color: "var(--fg)", fontSize: 14.5, lineHeight: 1.8, marginBottom: 30, maxWidth: "45ch", margin: "0 auto" }}>
               <li>Compare TV broadcasters head-to-head with digital creators.</li>

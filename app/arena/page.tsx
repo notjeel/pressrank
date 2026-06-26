@@ -243,7 +243,7 @@ export default function ArenaPage() {
       {slate && !done && (
         <div style={{
           display: "grid",
-          gridTemplateColumns: kind === "pairwise" ? "repeat(auto-fit,minmax(240px,1fr))" : "repeat(auto-fit,minmax(220px,1fr))",
+          gridTemplateColumns: kind === "pairwise" ? "repeat(auto-fit,minmax(min(100%,240px),1fr))" : "repeat(auto-fit,minmax(min(100%,220px),1fr))",
           gap: 13,
           opacity: loading ? 0.3 : 1,
           transform: loading ? "scale(0.985)" : "scale(1)",

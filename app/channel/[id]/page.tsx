@@ -78,6 +78,15 @@ export default function ChannelPage({ params }: { params: { id: string } }) {
 
   return (
     <main style={{ maxWidth: 1080, margin: "0 auto", padding: "clamp(20px,4vw,44px) clamp(15px,4vw,40px) 90px" }}>
+      <style>{`
+        @media (max-width: 640px) {
+          .pr-reach-disclaimer {
+            margin-left: 0 !important;
+            text-align: left !important;
+            max-width: 100% !important;
+          }
+        }
+      `}</style>
       <button onClick={() => router.push("/leaderboard")} style={{ fontSize: 13, color: "var(--muted)", marginBottom: 18 }}>← Leaderboard</button>
 
       <div style={{ display: "flex", gap: 18, alignItems: "flex-start", flexWrap: "wrap" }}>
@@ -111,12 +120,12 @@ export default function ChannelPage({ params }: { params: { id: string } }) {
             <div style={{ fontSize: 11.5, color: "var(--muted)" }}>{m.label}</div>
           </div>
         ))}
-        <div style={{ marginLeft: "auto", fontSize: 11.5, color: "var(--faint)", maxWidth: "32ch", textAlign: "right" }}>
+        <div className="pr-reach-disclaimer" style={{ marginLeft: "auto", fontSize: 11.5, color: "var(--faint)", maxWidth: "32ch", textAlign: "right" }}>
           Reach is context only — it is <em>not</em> part of the rating.
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24, marginTop: 30 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 24, marginTop: 30 }}>
         <div style={card}>
           <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 2 }}>Trust profile</div>
           <div style={{ fontSize: 12.5, color: "var(--muted)", marginBottom: 6 }}>Five dimensions · whiskers show ±σ confidence</div>

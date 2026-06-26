@@ -110,7 +110,7 @@ function CompareInner() {
       {loaded.length === 0 ? (
         <p style={{ fontSize: 14, color: "var(--muted)", margin: "0 auto" }}>Add channels above to compare their trust profiles.</p>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 26, textAlign: "left" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 26, textAlign: "left" }}>
           <div style={{ border: "1px solid var(--line)", borderRadius: 16, background: "var(--surface)", padding: 20, display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{ alignSelf: "flex-start", fontWeight: 600, fontSize: 15, marginBottom: 10 }}>Overlaid profiles</div>
             <Radar series={series} />

@@ -126,9 +126,25 @@ function LeaderboardInner() {
     </label>
   );
 
-  return (
-    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(20px,4vw,44px) clamp(15px,4vw,40px) 90px", textAlign: "center" }}>
-      <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 600, letterSpacing: ".13em", textTransform: "uppercase", color: "var(--accent)" }}>
+    return (
+      <main style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(20px,4vw,44px) clamp(15px,4vw,40px) 90px", textAlign: "center" }}>
+        <style>{`
+          @media (max-width: 640px) {
+            .pr-lb-header, .pr-row {
+              grid-template-columns: 24px 1fr 50px !important;
+              gap: 8px !important;
+              padding: 10px 12px !important;
+            }
+            .pr-col-medium, .pr-col-sample, .pr-col-minibar {
+              display: none !important;
+            }
+            .pr-col-rating {
+              justify-content: flex-end;
+              text-align: right;
+            }
+          }
+        `}</style>
+        <div style={{ marginBottom: 8, fontSize: 11, fontWeight: 600, letterSpacing: ".13em", textTransform: "uppercase", color: "var(--accent)" }}>
         Leaderboard
       </div>
       <h1 style={{ fontFamily: "Newsreader,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,4vw,38px)", lineHeight: 1.1, margin: "0 auto 10px", letterSpacing: "-.01em", maxWidth: "30ch" }}>
@@ -138,7 +154,7 @@ function LeaderboardInner() {
         Every point is a channel, scored from a blind-judged sample of its statements. Position is the community&apos;s read on quality — not a verdict.
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(330px,1fr))", gap: 20, marginBottom: 38 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,330px),1fr))", gap: 20, marginBottom: 38 }}>
         <div style={cardChrome}>
           <div style={{ fontWeight: 600, fontSize: 15 }}>Bias × Credibility</div>
           <div style={{ fontSize: 12.5, color: "var(--muted)", margin: "3px 0 6px" }}>Neutrality (→) against factual accuracy (↑)</div>
@@ -173,12 +189,12 @@ function LeaderboardInner() {
       </div>
 
       <div style={{ border: "1px solid var(--line)", borderRadius: 16, background: "var(--surface)", overflow: "hidden", textAlign: "left" }}>
-        <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: 10, padding: "12px 18px", borderBottom: "1px solid var(--line)", fontSize: 11, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--muted)" }}>
-          <div>#</div>
-          <div>Channel</div>
-          <div>Medium</div>
-          <div>{dimLabel} · ±σ</div>
-          <div style={{ textAlign: "right" }}>Sample</div>
+        <div className="pr-lb-header" style={{ display: "grid", gridTemplateColumns: gridCols, gap: 10, padding: "12px 18px", borderBottom: "1px solid var(--line)", fontSize: 11, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--muted)" }}>
+          <div className="pr-col-rank">#</div>
+          <div className="pr-col-channel">Channel</div>
+          <div className="pr-col-medium">Medium</div>
+          <div className="pr-col-rating">{dimLabel} · ±σ</div>
+          <div className="pr-col-sample" style={{ textAlign: "right" }}>Sample</div>
         </div>
 
         {loading ? (
@@ -196,8 +212,8 @@ function LeaderboardInner() {
               onClick={() => router.push(`/channel/${r.channel.id}`)}
               style={{ display: "grid", gridTemplateColumns: gridCols, gap: 10, padding: "14px 18px", borderBottom: "1px solid var(--grid)", alignItems: "center", cursor: "pointer" }}
             >
-              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--muted)" }}>{i + 1}</div>
-              <div style={{ minWidth: 0 }}>
+              <div className="pr-col-rank" style={{ fontSize: 13, fontWeight: 600, color: "var(--muted)" }}>{i + 1}</div>
+              <div className="pr-col-channel" style={{ minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 15, letterSpacing: "-.01em" }}>
                   {r.channel.name}
                   {r.channel.verified && (
@@ -208,14 +224,14 @@ function LeaderboardInner() {
                   {[r.channel.content_type, r.channel.language].filter(Boolean).join(" · ")}
                 </div>
               </div>
-              <div style={{ fontSize: 13, color: "var(--muted)" }}>{r.channel.medium}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div className="pr-col-medium" style={{ fontSize: 13, color: "var(--muted)" }}>{r.channel.medium}</div>
+              <div className="pr-col-rating" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 16, width: 34 }}>{r.rating.toFixed(1)}</div>
-                <div style={{ flex: 1, minWidth: 60 }}>
+                <div className="pr-col-minibar" style={{ flex: 1, minWidth: 60 }}>
                   <MiniBar rating={r.rating} sigma={r.sigma} />
                 </div>
               </div>
-              <div style={{ textAlign: "right", fontVariantNumeric: "tabular-nums", fontSize: 13, color: "var(--muted)" }}>{r.n_statements}·n</div>
+              <div className="pr-col-sample" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums", fontSize: 13, color: "var(--muted)" }}>{r.n_statements}·n</div>
             </div>
           ))
         )}
