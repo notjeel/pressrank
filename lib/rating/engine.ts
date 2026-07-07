@@ -30,6 +30,11 @@ export interface RecomputeResult {
 export async function recomputeRatings(
   supabase: SupabaseClient
 ): Promise<RecomputeResult> {
+  // Clear all existing computed ratings and scores to ensure a clean state
+  // and prevent stale launch-window ratings from lingering in the database.
+  await supabase.from("channel_ratings").delete().gt("dimension_id", 0);
+  await supabase.from("statement_scores").delete().gt("dimension_id", 0);
+
   // 1. Reset counters, then replay all votes into (statement,dimension) tallies.
   const tally = new Map<
     string,
