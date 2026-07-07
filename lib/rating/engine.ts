@@ -15,10 +15,6 @@ import { config } from "@/lib/config";
 // --- Tunables ---
 const PRIOR_STRENGTH = 5; // pseudo-observations pulling toward the global mean
 const GLOBAL_PRIOR = 0.4; // expected baseline selection rate (k/n ≈ 3/7)
-// A channel needs this many scored statements AND this much total exposure to
-// be publicly "ranked". Env-tunable (lower for a small launch).
-const MIN_STATEMENTS = config.rankMinStatements;
-const MIN_EXPOSURE = config.rankMinExposure;
 const CHANNEL_PRIOR_STRENGTH = 4;
 
 export interface RecomputeResult {
@@ -50,6 +46,13 @@ export async function recomputeRatings(
   const slateById = new Map(
     (slates ?? []).map((s) => [s.id as string, s])
   );
+
+  // Dynamic ranking thresholds: relaxed (1 statement, 2 exposures) until 2,500 total votes are cast.
+  // Then automatically shifts to strict mode (3 statements, 10 exposures).
+  const totalVotes = votes?.length ?? 0;
+  const isLaunchMode = totalVotes < 2500;
+  const MIN_STATEMENTS = isLaunchMode ? 1 : 3;
+  const MIN_EXPOSURE = isLaunchMode ? 2 : 10;
 
   let votesProcessed = 0;
   for (const v of votes ?? []) {

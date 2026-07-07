@@ -7,14 +7,9 @@ function num(name: string, fallback: number): number {
 }
 
 // --- Launch-window thresholds ---
-// For the first 15 days after launch, use relaxed thresholds so that channels
-// qualify for the leaderboard faster with fewer votes. After the window closes,
-// the normal (stricter) thresholds apply automatically — no manual reset needed.
-const LAUNCH_DATE = new Date("2026-06-20T00:00:00Z");
-const LAUNCH_WINDOW_DAYS = 15;
-const inLaunchWindow =
-  (Date.now() - LAUNCH_DATE.getTime()) < LAUNCH_WINDOW_DAYS * 86_400_000;
-
+// Enforces relaxed launch thresholds (1 statement, 2 exposures) dynamically
+// in the rating engine until the database accumulates at least 2,500 total votes.
+// Stricter normal thresholds (3 statements, 10 exposures) apply automatically thereafter.
 export const config = {
   // ---- Per-user voting limits (anti-abuse + fairness) ----
   voteLimitPerWeek: num("VOTE_LIMIT_PER_WEEK", 50),
@@ -24,16 +19,8 @@ export const config = {
   // gemini-3.1-flash-lite free tier is ~500 requests/day; keep margin.
   maxAiCallsPerRun: num("MAX_AI_CALLS_PER_RUN", 120),
 
-  // ---- Ranking thresholds (when a channel becomes publicly ranked) ----
-  // Launch window (first 15 days): 1 statement, 2 exposure
-  // Normal:                        3 statements, 10 exposure
-  rankMinStatements: inLaunchWindow
-    ? num("RANK_MIN_STATEMENTS", 1)
-    : num("RANK_MIN_STATEMENTS", 3),
-  rankMinExposure: inLaunchWindow
-    ? num("RANK_MIN_EXPOSURE", 2)
-    : num("RANK_MIN_EXPOSURE", 10),
-
-  // Expose for logging/debugging
-  inLaunchWindow,
+  // ---- Default ranking thresholds (dynamically switched at 2.5k votes) ----
+  rankMinStatements: num("RANK_MIN_STATEMENTS", 1),
+  rankMinExposure: num("RANK_MIN_EXPOSURE", 2),
+  inLaunchWindow: true, // Legacy compatibility flag
 };
