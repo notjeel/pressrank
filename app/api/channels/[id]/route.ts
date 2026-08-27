@@ -25,7 +25,7 @@ export async function GET(
     await Promise.all([
       supabase
         .from("channel_ratings")
-        .select("dimension_id, rating, sigma, n_statements, ranked")
+        .select("dimension_id, rating, sigma, n_statements, exposure, ranked")
         .eq("channel_id", id),
       supabase.from("dimensions").select("id, key, label").order("sort"),
       supabase
@@ -44,13 +44,23 @@ export async function GET(
     ]);
 
   const dimById = new Map((dims ?? []).map((d) => [d.id, d]));
-  const radar = (ratings ?? []).map((r: any) => ({
-    dimension: dimById.get(r.dimension_id),
-    rating: r.rating,
-    sigma: r.sigma,
-    n_statements: r.n_statements,
-    ranked: r.ranked,
-  }));
+  const radar = (ratings ?? [])
+    // A row with no evidence behind it is a retired placeholder, not a rating.
+    .filter((r: any) => r.exposure > 0)
+    .map((r: any) => ({
+      dimension: dimById.get(r.dimension_id),
+      rating: r.rating,
+      sigma: r.sigma,
+      // The conservative estimate the leaderboard orders by.
+      lower_bound: Math.max(0, Math.round((r.rating - 1.96 * r.sigma) * 10) / 10),
+      n_statements: r.n_statements,
+      exposure: r.exposure,
+      ranked: r.ranked,
+      provisional: !r.ranked,
+    }))
+    .sort(
+      (a: any, b: any) => (a.dimension?.id ?? 0) - (b.dimension?.id ?? 0)
+    );
 
   return NextResponse.json({
     channel,

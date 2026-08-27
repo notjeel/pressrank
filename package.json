@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "tsx scripts/seed-channels.ts"
+    "seed": "tsx scripts/seed-channels.ts",
+    "collect": "tsx scripts/run-collect.ts",
+    "recompute": "tsx scripts/run-recompute.ts",
+    "verify:rating": "tsx scripts/verify-rating.ts",
+    "check": "tsc --noEmit && tsx scripts/verify-rating.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

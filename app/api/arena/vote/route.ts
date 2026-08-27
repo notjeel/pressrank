@@ -99,6 +99,15 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  // Reject empty ballots rather than storing them. The scoring engine discards
+  // abstentions anyway (they carry no ranking information), so an accepted-but-
+  // ignored vote would silently burn the voter's weekly quota for nothing.
+  if (cleanSelected.length === 0) {
+    return NextResponse.json(
+      { error: "pick at least one statement" },
+      { status: 400 }
+    );
+  }
 
   // 8. Compute weight (identity trust from account age; CIB hooks later)
   const { data: profile } = await admin

@@ -17,7 +17,23 @@ interface LbRow {
   };
   rating: number;
   sigma: number;
+  /** rating - 1.96s: the conservative estimate the board is ordered by. */
+  lower_bound: number;
   n_statements: number;
+  exposure: number;
+  ranked: boolean;
+  provisional: boolean;
+}
+
+interface LbMeta {
+  totalVotes: number;
+  tier: "launch" | "growth" | "mature";
+  minStatements: number;
+  minExposure: number;
+  launchWindow: boolean;
+  votesToNextTier: number | null;
+  rankedCount: number;
+  provisionalCount: number;
 }
 
 interface ChannelLite {
@@ -41,6 +57,7 @@ function LeaderboardInner() {
   };
 
   const [rows, setRows] = useState<LbRow[]>([]);
+  const [meta, setMeta] = useState<LbMeta | null>(null);
   const [bc, setBc] = useState<ScatterPoint[]>([]);
   const [rt, setRt] = useState<ScatterPoint[]>([]);
   const [allChannels, setAllChannels] = useState<ChannelLite[]>([]);
@@ -76,7 +93,10 @@ function LeaderboardInner() {
     if (lang !== "all") qs.set("lang", lang);
     fetch(`/api/leaderboard?${qs}`)
       .then((r) => r.json())
-      .then((d) => setRows(d.rows ?? []))
+      .then((d) => {
+        setRows(d.rows ?? []);
+        setMeta(d.meta ?? null);
+      })
       .finally(() => setLoading(false));
   }, [dim, medium, type, lang]);
 
@@ -167,6 +187,26 @@ function LeaderboardInner() {
         </div>
       </div>
 
+      {meta?.launchWindow && (
+        <div style={{ border: "1px solid var(--line)", borderRadius: 14, background: "var(--surface)", padding: "13px 16px", marginBottom: 18, textAlign: "left", display: "flex", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <span style={{ flex: "none", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: "#fff", background: "var(--accent)", borderRadius: 6, padding: "4px 8px", marginTop: 1 }}>
+            Launch window
+          </span>
+          <div style={{ flex: 1, minWidth: 220, fontSize: 13, lineHeight: 1.55, color: "var(--muted)" }}>
+            <strong style={{ color: "var(--fg)", fontWeight: 600 }}>
+              {meta.totalVotes.toLocaleString()} blind votes counted.
+            </strong>{" "}
+            While the database is young the bar to appear here is deliberately low
+            — {meta.minStatements} statement{meta.minStatements === 1 ? "" : "s"} and{" "}
+            {meta.minExposure} judgements — so ranking actually happens instead of
+            showing you an empty page. Ratings are early and will move.
+            {meta.votesToNextTier != null && (
+              <> {meta.votesToNextTier.toLocaleString()} more votes tightens it.</>
+            )}
+          </div>
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end", justifyContent: "center", marginBottom: 16 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".07em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 6 }}>Rank by</div>
@@ -201,41 +241,70 @@ function LeaderboardInner() {
           <div style={{ padding: "28px 18px", fontSize: 14, color: "var(--muted)" }}>Loading…</div>
         ) : rows.length === 0 ? (
           <div style={{ padding: "28px 18px", fontSize: 14, color: "var(--muted)" }}>
-            No ranked channels for this filter yet. Channels appear once enough blind votes
-            accumulate — cast some in the <span style={{ color: "var(--accent)", cursor: "pointer" }} onClick={() => router.push("/arena")}>Arena</span>, then recompute.
+            No channels carry votes for this filter yet. Ratings appear as soon as a
+            channel has been judged even once — cast a few in the{" "}
+            <span style={{ color: "var(--accent)", cursor: "pointer" }} onClick={() => router.push("/arena")}>Arena</span>.
           </div>
         ) : (
-          rows.map((r, i) => (
-            <div
-              key={r.channel.id}
-              className="pr-row"
-              onClick={() => router.push(`/channel/${r.channel.id}`)}
-              style={{ display: "grid", gridTemplateColumns: gridCols, gap: 10, padding: "14px 18px", borderBottom: "1px solid var(--grid)", alignItems: "center", cursor: "pointer" }}
-            >
-              <div className="pr-col-rank" style={{ fontSize: 13, fontWeight: 600, color: "var(--muted)" }}>{i + 1}</div>
-              <div className="pr-col-channel" style={{ minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 15, letterSpacing: "-.01em" }}>
-                  {r.channel.name}
-                  {r.channel.verified && (
-                    <span style={{ flex: "none", width: 14, height: 14, borderRadius: "50%", background: "var(--accent)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>✓</span>
-                  )}
-                </div>
-                <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                  {[r.channel.content_type, r.channel.language].filter(Boolean).join(" · ")}
+          rows.map((r, i) => {
+            const firstProvisional =
+              r.provisional && (i === 0 || !rows[i - 1].provisional);
+            return (
+              <div key={r.channel.id}>
+                {firstProvisional && (
+                  <div style={{ padding: "11px 18px", background: "var(--grid)", fontSize: 11, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--muted)", borderBottom: "1px solid var(--line)" }}>
+                    Not yet qualified · under {meta?.minStatements ?? 1} statement
+                    {(meta?.minStatements ?? 1) === 1 ? "" : "s"} or {meta?.minExposure ?? 2} judgements
+                  </div>
+                )}
+                <div
+                  className="pr-row"
+                  onClick={() => router.push(`/channel/${r.channel.id}`)}
+                  style={{ display: "grid", gridTemplateColumns: gridCols, gap: 10, padding: "14px 18px", borderBottom: "1px solid var(--grid)", alignItems: "center", cursor: "pointer", opacity: r.provisional ? 0.62 : 1 }}
+                >
+                  <div className="pr-col-rank" style={{ fontSize: 13, fontWeight: 600, color: "var(--muted)" }}>
+                    {r.provisional ? "–" : i + 1}
+                  </div>
+                  <div className="pr-col-channel" style={{ minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 15, letterSpacing: "-.01em" }}>
+                      {r.channel.name}
+                      {r.channel.verified && (
+                        <span style={{ flex: "none", width: 14, height: 14, borderRadius: "50%", background: "var(--accent)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>✓</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                      {[r.channel.content_type, r.channel.language].filter(Boolean).join(" · ")}
+                    </div>
+                  </div>
+                  <div className="pr-col-medium" style={{ fontSize: 13, color: "var(--muted)" }}>{r.channel.medium}</div>
+                  <div className="pr-col-rating" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 16, width: 34 }}>{r.rating.toFixed(1)}</div>
+                    <div className="pr-col-minibar" style={{ flex: 1, minWidth: 60 }}>
+                      <MiniBar rating={r.rating} sigma={r.sigma} />
+                    </div>
+                  </div>
+                  <div
+                    className="pr-col-sample"
+                    title={`${r.n_statements} statement(s), judged ${r.exposure} time(s)`}
+                    style={{ textAlign: "right", fontVariantNumeric: "tabular-nums", fontSize: 13, color: "var(--muted)" }}
+                  >
+                    {r.n_statements}·n / {r.exposure}
+                  </div>
                 </div>
               </div>
-              <div className="pr-col-medium" style={{ fontSize: 13, color: "var(--muted)" }}>{r.channel.medium}</div>
-              <div className="pr-col-rating" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 16, width: 34 }}>{r.rating.toFixed(1)}</div>
-                <div className="pr-col-minibar" style={{ flex: 1, minWidth: 60 }}>
-                  <MiniBar rating={r.rating} sigma={r.sigma} />
-                </div>
-              </div>
-              <div className="pr-col-sample" style={{ textAlign: "right", fontVariantNumeric: "tabular-nums", fontSize: 13, color: "var(--muted)" }}>{r.n_statements}·n</div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
+
+      <p style={{ marginTop: 16, fontSize: 12, lineHeight: 1.6, color: "var(--faint)", maxWidth: "78ch", margin: "16px auto 0", textAlign: "left" }}>
+        Ordered by the conservative estimate — rating minus its confidence band —
+        so a channel judged thirty times outranks one that got lucky twice. The
+        number shown is the rating itself; the bar behind it is ±1σ. 50 is exactly
+        what a statement would score by chance, so above 50 means voters picked it
+        more often than random selection would. &ldquo;Sample&rdquo; is statements
+        judged / total judgements.
+      </p>
     </main>
   );
 }

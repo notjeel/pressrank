@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getAIProvider } from "@/lib/ai";
 import { config } from "@/lib/config";
+import { selectAll } from "@/lib/supabase/paginate";
+import { hasCapability } from "@/lib/supabase/capabilities";
 import type { Channel } from "@/lib/supabase/types";
 import { contentHash } from "./hash";
 import {
@@ -236,7 +238,20 @@ async function harvestStatements(
   result.statementsAdded += added;
 }
 
-// ---------- Step 5: compose balanced, randomized slates ----------
+// ---------- Step 5: compose balanced, coverage-aware slates ----------
+//
+// The old composer drew statements uniformly at random from whatever the first
+// 1000 rows happened to be. With 4,000+ statements that meant three quarters of
+// the corpus could never be slated at all, and the statements that WERE slated
+// accumulated exposure unevenly — so channels crawled toward the ranking
+// threshold at wildly different rates.
+//
+// This version pages the whole corpus, then builds each slate from the
+// LEAST-COVERED channels and their LEAST-COVERED statements, where "coverage"
+// counts both votes already received and slates already queued. Coverage
+// spreads evenly, every channel reaches the ranking bar at about the same time,
+// and the draw stays randomised inside the under-covered band so slates are not
+// predictable.
 async function composeSlates(
   supabase: SupabaseClient,
   result: CollectResult
@@ -244,108 +259,207 @@ async function composeSlates(
   const { data: dims } = await supabase.from("dimensions").select("id");
   if (!dims?.length) return 0;
 
-  // Prune slates older than 365 days to keep the database size bounded.
-  // This automatically retires old votes (on delete cascade), keeping ratings fresh.
-  const oneYearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
-  await supabase.from("slates").delete().lt("created_at", oneYearAgo);
+  const canSoftDelete = await hasCapability(supabase, "slateServing");
+  const cutoff = new Date(
+    Date.now() - config.slateRetentionDays * 86_400_000
+  ).toISOString();
 
-  // Retire statements older than 365 days from the active pool.
-  // This keeps the voting pool fresh and relevant while preserving historical vote data.
+  // NON-DESTRUCTIVE RETIREMENT.
+  // This used to be `slates.delete().lt(created_at, cutoff)` — and slates
+  // cascade-delete their votes. A year-old slate held a year of community
+  // judgement, and the nightly cron was quietly incinerating it. Now the slate
+  // is only taken out of rotation; the votes and the evidence they carry stay.
+  if (canSoftDelete) {
+    const { error } = await supabase
+      .from("slates")
+      .update({ active: false })
+      .lt("created_at", cutoff)
+      .eq("active", true);
+    if (error) result.errors.push(`retire slates: ${error.message}`);
+  }
+
+  // Retire statements past the retention window from the active pool. Already
+  // non-destructive: the row and its history stay, it just stops being slated.
   await supabase
     .from("statements")
     .update({ active: false })
-    .lt("harvested_at", oneYearAgo)
+    .lt("harvested_at", cutoff)
     .eq("active", true);
 
-  // Stop composing if we already have plenty of fresh slates in rotation.
-  // This prevents cron spamming while ensuring new slates can always enter.
+  // Stop composing once there are plenty of fresh slates in rotation, so the
+  // cron cannot balloon the pool faster than voters can work through it.
   const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const { count: existingRecent } = await supabase
     .from("slates")
     .select("id", { count: "exact", head: true })
     .gte("created_at", sevenDaysAgo);
-  if ((existingRecent ?? 0) >= 120) return 0;
+  if ((existingRecent ?? 0) >= config.recentSlateCeiling) return 0;
 
-  // Pull active statements with their channel so we can enforce ≤1 per channel.
-  const { data: stmts } = await supabase
-    .from("statements")
-    .select("id, channel_id")
-    .eq("active", true);
-  if (!stmts || stmts.length < 4) return 0;
+  // --- Load the FULL corpus (paged past the 1000-row cap) ------------------
+  const stmts = await selectAll<{ id: string; channel_id: string }>(
+    () => supabase.from("statements").select("id, channel_id").eq("active", true),
+    "load statements"
+  );
+  if (stmts.length < 4) return 0;
 
-  // Fetch existing slates to prevent duplicates
-  const { data: existingSlates } = await supabase
-    .from("slates")
-    .select("dimension_id, kind, statement_ids");
-  
+  const existingSlates = await selectAll<{
+    dimension_id: number;
+    kind: string;
+    statement_ids: string[];
+  }>(
+    () => supabase.from("slates").select("dimension_id, kind, statement_ids"),
+    "load slates"
+  );
+
   const existingSignatures = new Set<string>();
-  for (const s of existingSlates ?? []) {
-    const sortedIds = [...(s.statement_ids as string[] ?? [])].sort().join(",");
-    existingSignatures.add(`${s.kind}:${s.dimension_id}:${sortedIds}`);
+  const queued = new Map<string, number>(); // statement -> slates awaiting votes
+  for (const s of existingSlates) {
+    const ids = (s.statement_ids as string[]) ?? [];
+    existingSignatures.add(`${s.kind}:${s.dimension_id}:${[...ids].sort().join(",")}`);
+    for (const id of ids) queued.set(id, (queued.get(id) ?? 0) + 1);
   }
 
-  // Several slates per dimension per run, each a fresh randomized draw.
-  // Slowed down to 2 TOPK and 1 PAIR per dimension (15 slates total per run)
-  // to grow the pool moderately.
-  const TOPK_PER_DIM = 2;
-  const PAIR_PER_DIM = 1;
+  // Votes already received, per statement.
+  const scores = await selectAll<{ statement_id: string; shown: number }>(
+    () => supabase.from("statement_scores").select("statement_id, shown"),
+    "load statement scores"
+  );
+  const seen = new Map<string, number>();
+  for (const s of scores) {
+    seen.set(s.statement_id, (seen.get(s.statement_id) ?? 0) + (s.shown ?? 0));
+  }
+
+  const pool = buildCoveragePool(stmts, seen, queued);
 
   let created = 0;
+  const pending: {
+    kind: string;
+    dimension_id: number;
+    statement_ids: string[];
+    max_pick: number;
+  }[] = [];
+
   for (const dim of dims) {
-    for (let i = 0; i < TOPK_PER_DIM; i++) {
-      const topk = buildSlate(stmts, 7);
-      if (topk.length >= 4) {
-        const sortedIds = [...topk].sort().join(",");
-        const sig = `topk:${dim.id}:${sortedIds}`;
-        if (existingSignatures.has(sig)) continue;
-        existingSignatures.add(sig);
-
-        await supabase.from("slates").insert({
-          kind: "topk",
-          dimension_id: dim.id,
-          statement_ids: topk,
-          max_pick: 3,
-        });
-        created += 1;
-      }
+    for (let i = 0; i < config.topkSlatesPerDim; i++) {
+      const ids = drawSlate(pool, 7);
+      if (ids.length < 4) continue;
+      const sig = `topk:${dim.id}:${[...ids].sort().join(",")}`;
+      if (existingSignatures.has(sig)) continue;
+      existingSignatures.add(sig);
+      pending.push({
+        kind: "topk",
+        dimension_id: dim.id,
+        statement_ids: ids,
+        max_pick: 3,
+      });
     }
-    for (let i = 0; i < PAIR_PER_DIM; i++) {
-      const pair = buildSlate(stmts, 2);
-      if (pair.length === 2) {
-        const sortedIds = [...pair].sort().join(",");
-        const sig = `pairwise:${dim.id}:${sortedIds}`;
-        if (existingSignatures.has(sig)) continue;
-        existingSignatures.add(sig);
-
-        await supabase.from("slates").insert({
-          kind: "pairwise",
-          dimension_id: dim.id,
-          statement_ids: pair,
-          max_pick: 1,
-        });
-        created += 1;
-      }
+    for (let i = 0; i < config.pairSlatesPerDim; i++) {
+      const ids = drawSlate(pool, 2);
+      if (ids.length !== 2) continue;
+      const sig = `pairwise:${dim.id}:${[...ids].sort().join(",")}`;
+      if (existingSignatures.has(sig)) continue;
+      existingSignatures.add(sig);
+      pending.push({
+        kind: "pairwise",
+        dimension_id: dim.id,
+        statement_ids: ids,
+        max_pick: 1,
+      });
     }
   }
+
+  // One batched insert instead of one round-trip per slate.
+  for (let i = 0; i < pending.length; i += 100) {
+    const chunk = pending.slice(i, i + 100);
+    const { error } = await supabase.from("slates").insert(chunk);
+    if (error) result.errors.push(`insert slates: ${error.message}`);
+    else created += chunk.length;
+  }
+
   result.slatesCreated = created;
   return created;
 }
 
-// Pick up to n statements, at most one per channel, randomized.
-function buildSlate(
+export interface PoolStatement {
+  id: string;
+  load: number;
+}
+export interface PoolChannel {
+  channelId: string;
+  statements: PoolStatement[];
+  /** TOTAL load across the channel's statements — see buildCoveragePool. */
+  load: number;
+}
+
+/**
+ * Coverage load = impressions already collected + queued-but-unvoted slates.
+ * A statement sitting in five unvoted slates is about to get five impressions,
+ * so it should not be queued a sixth time ahead of one nobody has ever shown.
+ *
+ * A channel's load is the SUM over its statements, not the mean. The ranking
+ * threshold a channel has to clear is total exposure, so equalising totals is
+ * what actually gets every channel onto the leaderboard. Using the mean instead
+ * makes a channel with three statements look as well-covered as one with
+ * thirty, and starves exactly the small channels that need the impressions most.
+ */
+export function buildCoveragePool(
   stmts: { id: string; channel_id: string }[],
-  n: number
-): string[] {
-  const shuffled = [...stmts].sort(() => Math.random() - 0.5);
+  seen: Map<string, number>,
+  queued: Map<string, number>
+): PoolChannel[] {
+  const byChannel = new Map<string, PoolStatement[]>();
+  for (const s of stmts) {
+    const load = (seen.get(s.id) ?? 0) + (queued.get(s.id) ?? 0);
+    const list = byChannel.get(s.channel_id) ?? [];
+    list.push({ id: s.id, load });
+    byChannel.set(s.channel_id, list);
+  }
+  const pool: PoolChannel[] = [];
+  for (const [channelId, statements] of byChannel) {
+    statements.sort((a, b) => a.load - b.load);
+    const load = statements.reduce((a, s) => a + s.load, 0);
+    pool.push({ channelId, statements, load });
+  }
+  return pool;
+}
+
+/**
+ * Draw n statements, at most one per channel, biased toward the least-covered
+ * channels and their least-covered statements — randomised inside that band so
+ * consecutive slates are not identical. Mutates `load` in place so slates built
+ * later in the same run avoid what earlier ones just took.
+ */
+export function drawSlate(pool: PoolChannel[], n: number): string[] {
+  if (pool.length < 2) return [];
+  pool.sort((a, b) => a.load - b.load);
+
+  // Consider a band a few times wider than the slate so the draw has slack.
+  const band = shuffle(pool.slice(0, Math.min(pool.length, Math.max(n * 3, 12))));
   const picked: string[] = [];
-  const usedChannels = new Set<string>();
-  for (const s of shuffled) {
-    if (usedChannels.has(s.channel_id)) continue;
-    usedChannels.add(s.channel_id);
-    picked.push(s.id);
+
+  for (const channel of band) {
     if (picked.length >= n) break;
+    if (!channel.statements.length) continue;
+    // Randomise among this channel's least-covered handful.
+    const head = channel.statements.slice(0, Math.min(3, channel.statements.length));
+    const chosen = head[Math.floor(Math.random() * head.length)];
+    picked.push(chosen.id);
+
+    chosen.load += 1;
+    channel.load += 1;
+    channel.statements.sort((a, b) => a.load - b.load);
   }
   return picked;
+}
+
+/** Fisher-Yates. `sort(() => Math.random() - 0.5)` is not a uniform shuffle. */
+function shuffle<T>(items: T[]): T[] {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 function isStale(ts: string | null, ttlHours: number): boolean {
@@ -373,13 +487,18 @@ async function autoArchiveYearlyRatings(supabase: SupabaseClient) {
 
     if ((count ?? 0) === 0) {
       console.log(`Auto archiving yearly ratings for ${currentYear}...`);
-      const { data: ratings, error: ratingsErr } = await supabase
-        .from("channel_ratings")
-        .select("*");
-        
-      if (ratingsErr) {
-        throw new Error(`fetch ratings: ${ratingsErr.message}`);
-      }
+      // Only rows that actually qualified are worth archiving, and the read is
+      // paged so a database past 1000 ratings does not archive a partial year.
+      const ratings = await selectAll<any>(
+        () =>
+          supabase
+            .from("channel_ratings")
+            .select(
+              "channel_id, dimension_id, rating, sigma, n_statements, exposure"
+            )
+            .eq("ranked", true),
+        "fetch ratings"
+      );
 
       if (ratings?.length) {
         const rows = ratings.map((r) => ({
