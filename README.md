@@ -84,6 +84,37 @@ Ranking is bottlenecked by *exposure*, so both the Arena and the slate composer 
 
 - **`/api/arena/next`** serves the **least-voted** slates first (`slates.vote_count`), randomising inside that under-served band. It previously served the 200 most *recent* slates, so the newest were re-served forever while a thousand older ones never collected a single vote.
 - **`composeSlates`** builds each slate from the least-covered channels and their least-covered statements, where coverage counts votes received *and* slates already queued. Coverage spread across channels roughly halves over ten collection runs.
+- Composition throttles on the **unvoted backlog**, not on slate age. Gating on "slates created in the last 7 days" meant that adding a batch of channels pushed the count over the ceiling and shut composition off entirely — the new channels had statements but no slates, so they could never be voted on or ranked.
+- A **bootstrap pass** runs even at the ceiling, reserving slates for channels that appear in no slate at all. Getting a new entrant into rotation always beats throttling.
+
+### Managing the channel roster
+Channels are added with an API-validated tool, not a hand-written list:
+
+```bash
+npm run add:channels                          # dry run — resolve and report
+npm run add:channels -- --search --apply      # insert the ones that passed
+npm run audit:channels                        # health-check the whole roster
+npm run audit:channels -- --fix               # apply verified corrections
+```
+
+`add:channels` checks every candidate against the YouTube Data API for
+existence, reach and recent activity **before** writing anything. This matters
+more than it sounds:
+
+- A handle that does not resolve still gets inserted by a plain seed script, and
+  then `harvestStatements` bails without a `youtube_channel_id` — the channel
+  sits on the leaderboard forever contributing nothing.
+- Worse, a handle can resolve to the **wrong** channel. `@TheHindu` is an
+  87-subscriber account; `@WorldAffairs` is a 121-subscriber account that shares
+  a name with Prashant Dhawan's show, and a statement had already been harvested
+  from it and rated under his name. Search is no safer on its own: given "Alt
+  News" it happily returns *Altcoin Daily*.
+
+So the resolver tries the primary handle plus alternates, filters by a reach
+floor **first**, prefers a curated handle over a fuzzy search hit, then prefers a
+whole-token title match, and stores YouTube's own canonical handle rather than
+the guess. `audit:channels` re-checks the roster and flags anything that resolves
+below 10k subscribers as a likely impostor.
 
 ### Non-destructive by construction
 Nothing in the pipeline deletes evidence:

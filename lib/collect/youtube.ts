@@ -10,6 +10,8 @@ function key(): string | null {
 export interface YTChannel {
   channelId: string;
   title: string;
+  /** The channel's real @handle, straight from YouTube — never a guess. */
+  handle: string | null;
   subs: number | null;
   views: number | null;
   uploadsPlaylistId: string | null;
@@ -37,9 +39,15 @@ export async function fetchYouTubeChannel(input: {
   const data = await res.json();
   const item = data?.items?.[0];
   if (!item) return null;
+  const customUrl: string | undefined = item.snippet?.customUrl;
   return {
     channelId: item.id,
     title: item.snippet?.title ?? "",
+    handle: customUrl
+      ? customUrl.startsWith("@")
+        ? customUrl
+        : "@" + customUrl
+      : null,
     subs: numOrNull(item.statistics?.subscriberCount),
     views: numOrNull(item.statistics?.viewCount),
     uploadsPlaylistId:
@@ -48,10 +56,39 @@ export async function fetchYouTubeChannel(input: {
   };
 }
 
+/**
+ * Find channels by free-text name. Costs 100 quota units per call (vs 1 for a
+ * handle lookup), so this is a FALLBACK for when a handle cannot be guessed —
+ * never the primary path. Results are fuzzy: callers must verify the title and
+ * reach before trusting a hit, or they will happily import an impostor.
+ */
+export async function searchYouTubeChannels(
+  query: string,
+  max = 5
+): Promise<string[]> {
+  const k = key();
+  if (!k) return [];
+  const params = new URLSearchParams({
+    part: "snippet",
+    type: "channel",
+    q: query,
+    maxResults: String(max),
+    key: k,
+  });
+  const res = await fetch(`${API}/search?${params}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data?.items ?? [])
+    .map((i: any) => i?.snippet?.channelId ?? i?.id?.channelId)
+    .filter(Boolean);
+}
+
 export interface YTVideo {
   videoId: string;
   title: string;
   description: string;
+  /** ISO timestamp — lets callers tell an active channel from a dormant one. */
+  publishedAt: string | null;
 }
 
 /**
@@ -79,6 +116,8 @@ export async function fetchRecentVideos(
       videoId: i?.contentDetails?.videoId,
       title: i?.snippet?.title ?? "",
       description: i?.snippet?.description ?? "",
+      publishedAt:
+        i?.contentDetails?.videoPublishedAt ?? i?.snippet?.publishedAt ?? null,
     }))
     .filter((v: YTVideo) => v.videoId);
 }

@@ -11,7 +11,9 @@
     "collect": "tsx scripts/run-collect.ts",
     "recompute": "tsx scripts/run-recompute.ts",
     "verify:rating": "tsx scripts/verify-rating.ts",
-    "check": "tsc --noEmit && tsx scripts/verify-rating.ts"
+    "check": "tsc --noEmit && tsx scripts/verify-rating.ts",
+    "audit:channels": "tsx scripts/audit-channels.ts",
+    "add:channels": "tsx scripts/add-channels.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

@@ -79,7 +79,18 @@ export async function runCollection(
       await fetchStats(supabase, ch, result);
       await harvestStatements(supabase, ai, ch, result, aiBudget);
     } catch (e) {
-      result.errors.push(`${ch.name}: ${(e as Error).message}`);
+      const message = (e as Error).message ?? String(e);
+      result.errors.push(`${ch.name}: ${summarise(message)}`);
+      // The provider's daily quota is gone. Every remaining channel would
+      // fail the same way, so stop spending time and requests on them —
+      // slate composition still runs, and the next cron picks up the rest.
+      if (isQuotaExhausted(message)) {
+        result.budgetReached = true;
+        result.errors.push(
+          "AI provider daily quota exhausted — remaining channels deferred to the next run"
+        );
+        break;
+      }
     }
   }
 
@@ -286,14 +297,18 @@ async function composeSlates(
     .lt("harvested_at", cutoff)
     .eq("active", true);
 
-  // Stop composing once there are plenty of fresh slates in rotation, so the
-  // cron cannot balloon the pool faster than voters can work through it.
-  const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
-  const { count: existingRecent } = await supabase
-    .from("slates")
-    .select("id", { count: "exact", head: true })
-    .gte("created_at", sevenDaysAgo);
-  if ((existingRecent ?? 0) >= config.recentSlateCeiling) return 0;
+  // Stop composing once the voting backlog is deep enough, so the cron cannot
+  // balloon the pool faster than voters can work through it.
+  //
+  // The measure that matters is how many slates are sitting UNVOTED, not how
+  // many were created recently. Gating on age meant that adding a batch of new
+  // channels pushed the 7-day count over the ceiling and then composition shut
+  // off entirely — so the new channels had statements but no slates, and could
+  // never be voted on or ranked. Backlog is the honest signal: if voters have
+  // worked through the pool, more slates should be allowed no matter when the
+  // existing ones were made.
+  const backlog = await unvotedSlateCount(supabase);
+  const ceilingReached = backlog >= config.recentSlateCeiling;
 
   // --- Load the FULL corpus (paged past the 1000-row cap) ------------------
   const stmts = await selectAll<{ id: string; channel_id: string }>(
@@ -329,6 +344,7 @@ async function composeSlates(
     seen.set(s.statement_id, (seen.get(s.statement_id) ?? 0) + (s.shown ?? 0));
   }
 
+  const channelOfStatement = new Map(stmts.map((s) => [s.id, s.channel_id]));
   const pool = buildCoveragePool(stmts, seen, queued);
 
   let created = 0;
@@ -339,7 +355,45 @@ async function composeSlates(
     max_pick: number;
   }[] = [];
 
+  // ---- Bootstrap pass: channels with NO slate at all ----------------------
+  // This runs even when the backlog ceiling is reached. A channel that has been
+  // added and harvested but appears in zero slates cannot be voted on, so it can
+  // never be rated — it would sit invisible until the backlog happened to drain.
+  // Getting brand-new entrants into rotation always outranks throttling.
+  const represented = new Set<string>();
+  for (const s of existingSlates) {
+    for (const id of s.statement_ids ?? []) {
+      const ch = channelOfStatement.get(id);
+      if (ch) represented.add(ch);
+    }
+  }
+  const unrepresented = pool.filter((p) => !represented.has(p.channelId));
+  if (unrepresented.length) {
+    for (const dim of dims) {
+      for (let i = 0; i < config.bootstrapSlatesPerDim; i++) {
+        // Seed each slate with an unrepresented channel, filling the rest from
+        // the wider pool so the newcomer is judged against the existing field.
+        const ids = drawSlate(pool, 7, unrepresented);
+        if (ids.length < 4) continue;
+        const sig = `topk:${dim.id}:${[...ids].sort().join(",")}`;
+        if (existingSignatures.has(sig)) continue;
+        existingSignatures.add(sig);
+        pending.push({
+          kind: "topk",
+          dimension_id: dim.id,
+          statement_ids: ids,
+          max_pick: 3,
+        });
+      }
+    }
+  }
+
+  if (ceilingReached && pending.length === 0) {
+    return 0; // backlog is deep and every channel is already in rotation
+  }
+
   for (const dim of dims) {
+    if (ceilingReached) break; // bootstrap only
     for (let i = 0; i < config.topkSlatesPerDim; i++) {
       const ids = drawSlate(pool, 7);
       if (ids.length < 4) continue;
@@ -378,6 +432,35 @@ async function composeSlates(
 
   result.slatesCreated = created;
   return created;
+}
+
+/**
+ * How many slates are still waiting for their first vote. This is the real
+ * measure of whether the voting pool needs topping up.
+ *
+ * Uses the denormalised `slates.vote_count` from migration 0004 when present;
+ * before that it falls back to counting distinct voted slates, which is a
+ * heavier read but keeps the pipeline correct on an un-migrated database.
+ */
+async function unvotedSlateCount(supabase: SupabaseClient): Promise<number> {
+  if (await hasCapability(supabase, "slateServing")) {
+    const { count, error } = await supabase
+      .from("slates")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true)
+      .eq("vote_count", 0);
+    if (!error) return count ?? 0;
+  }
+
+  const { count: total } = await supabase
+    .from("slates")
+    .select("id", { count: "exact", head: true });
+  const votes = await selectAll<{ slate_id: string }>(
+    () => supabase.from("votes").select("slate_id"),
+    "load voted slates"
+  );
+  const voted = new Set(votes.map((v) => v.slate_id)).size;
+  return Math.max(0, (total ?? 0) - voted);
 }
 
 export interface PoolStatement {
@@ -429,17 +512,32 @@ export function buildCoveragePool(
  * consecutive slates are not identical. Mutates `load` in place so slates built
  * later in the same run avoid what earlier ones just took.
  */
-export function drawSlate(pool: PoolChannel[], n: number): string[] {
+export function drawSlate(
+  pool: PoolChannel[],
+  n: number,
+  /** Channels to seed the slate with before filling from the wider pool. */
+  seedFrom?: PoolChannel[]
+): string[] {
   if (pool.length < 2) return [];
   pool.sort((a, b) => a.load - b.load);
 
   // Consider a band a few times wider than the slate so the draw has slack.
   const band = shuffle(pool.slice(0, Math.min(pool.length, Math.max(n * 3, 12))));
+  // A seeded channel goes first so it is guaranteed a place; the rest of the
+  // slate is drawn normally, which is what makes the newcomer comparable.
+  const order = seedFrom?.length
+    ? [...shuffle(seedFrom).slice(0, Math.max(1, Math.floor(n / 3))), ...band]
+    : band;
   const picked: string[] = [];
+  const usedChannels = new Set<string>();
 
-  for (const channel of band) {
+  for (const channel of order) {
     if (picked.length >= n) break;
+    // At most one statement per channel — a slate must never pit an outlet
+    // against itself, and seeding can otherwise repeat a channel already in the band.
+    if (usedChannels.has(channel.channelId)) continue;
     if (!channel.statements.length) continue;
+    usedChannels.add(channel.channelId);
     // Randomise among this channel's least-covered handful.
     const head = channel.statements.slice(0, Math.min(3, channel.statements.length));
     const chosen = head[Math.floor(Math.random() * head.length)];
@@ -460,6 +558,25 @@ function shuffle<T>(items: T[]): T[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+/** Provider quota errors all look like an HTTP 429 / RESOURCE_EXHAUSTED. */
+function isQuotaExhausted(message: string): boolean {
+  return (
+    message.includes("429") ||
+    message.includes("RESOURCE_EXHAUSTED") ||
+    /quota|rate.?limit/i.test(message)
+  );
+}
+
+/**
+ * Provider errors arrive as multi-kilobyte JSON blobs. The full text buries
+ * every other error in the run and bloats the cron response, so keep the
+ * first line and a hint of the rest.
+ */
+function summarise(message: string, max = 200): string {
+  const collapsed = message.replace(/\s+/g, " ").trim();
+  return collapsed.length > max ? collapsed.slice(0, max) + "…" : collapsed;
 }
 
 function isStale(ts: string | null, ttlHours: number): boolean {

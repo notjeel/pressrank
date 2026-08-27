@@ -20,7 +20,12 @@ export const config = {
   // under-exposed statements instead of recycling the same handful.
   topkSlatesPerDim: num("TOPK_SLATES_PER_DIM", 8),
   pairSlatesPerDim: num("PAIR_SLATES_PER_DIM", 4),
+  // Ceiling on the UNVOTED slate backlog, not on slate age — see composeSlates.
   recentSlateCeiling: num("RECENT_SLATE_CEILING", 400),
+  // Slates per dimension reserved for channels that appear in no slate at all.
+  // This pass runs even at the ceiling, so a newly added channel always enters
+  // rotation instead of waiting for the backlog to drain.
+  bootstrapSlatesPerDim: num("BOOTSTRAP_SLATES_PER_DIM", 4),
   slateRetentionDays: num("SLATE_RETENTION_DAYS", 365),
 
   // ---- Launch window ----
